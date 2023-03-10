@@ -63,10 +63,17 @@ app.post('/api', async (req, res) => {
     res.status(200).json({
         'message': answer
     })
-    
-    
 
 })
+
+app.get('/messages', async (req, res) => {
+    const client = await pool.connect();
+    const query = 'SELECT messages FROM chat_messages';
+    const result = await client.query(query);
+    client.release();
+  
+    res.status(200).send(result.rows);
+  });
 
 app.get('/', (req, res)=>{
     res.send("Welcome to your server")
