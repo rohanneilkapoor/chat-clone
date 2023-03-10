@@ -1,0 +1,7 @@
+###
+POST http://localhost:1337/api
+Content-Type: application/json
+
+{
+    "prompt": "give me a recipe for cheese pizza"
+}

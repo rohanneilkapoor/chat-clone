@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat</title>
+</head>
+<body>
+  <h1>Chat</h1>
+  <form id="client-form">
+    <input type="text" id="prompt" name="prompt" required>
+    <button type="submit">Send</button>
+  </form>
+
+  <div id="messages"></div>
+
+  <script>
+    const form = document.querySelector('#client-form');
+    const messagesDiv = document.querySelector('#messages');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault(); // Prevent the default form submission behavior
+
+      const promptInput = document.querySelector('#prompt');
+      const prompt = promptInput.value;
+
+      const message = document.createElement('div');
+      message.textContent = prompt;
+      messagesDiv.appendChild(message);
+
+      const data = { prompt };
+
+      try {
+        const response = await fetch('http://localhost:8080/api', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        console.log(result);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
+  </script>
+</body>
+</html>
