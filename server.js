@@ -8,6 +8,15 @@ const port = 8080
 
 app.use(express.json())
 app.use(require('cors')())
+const { Pool } = require('pg');
+
+const pool = new Pool({
+  user: 'rohankapoor',
+  host: 'localhost',
+  database: 'chat_db',
+  password: 'password',
+  port: 5432,
+});
 
 require('dotenv').config()
 
@@ -35,7 +44,13 @@ async function sendPrompt(input) {
         model,
         messages
     })
-    //console.log(completion.data.choices)
+    const APIResponse = completion.data.choices[0].message
+    messages.push(APIResponse)
+    
+    const client = await pool.connect()
+    const query = 'INSERT INTO chat_messages (messages) VALUES ($1)'
+    await client.query(query, [JSON.stringify(messages)])
+    client.release()
     return completion.data.choices
 }
 
@@ -48,6 +63,9 @@ app.post('/api', async (req, res) => {
     res.status(200).json({
         'message': answer
     })
+    
+    
+
 })
 
 app.get('/', (req, res)=>{
