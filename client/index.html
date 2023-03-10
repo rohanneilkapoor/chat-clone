@@ -3,11 +3,70 @@
 <head>
   <title>Chat</title>
 </head>
+<style>
+  @font-face {
+    font-family: 'Satoshi-Regular';
+    src: url('../fonts/Satoshi-Regular.woff2') format('woff2'),
+        url('../fonts/Satoshi-Regular.woff') format('woff'),
+        url('../fonts/Satoshi-Regular.ttf') format('truetype');
+        font-weight: 400;
+        font-display: swap;
+        font-style: normal;
+  }
+  body {
+      font-family: 'Satoshi-Regular', sans-serif;
+      max-width: 700px;
+      margin: 0 auto;
+      font-size: 18px;
+      background-color: #FAFAFA;
+  }
+
+  #client-form {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 700px;
+    padding-top: 32px;
+    padding-bottom: 32px;
+  }
+  input {
+    font-family: 'Satoshi-Regular', sans-serif;
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    border: 1px solid #E3E3E3;
+  }
+  input:focus {
+    outline: none;
+  }
+  .message {
+  padding-bottom: 32px;
+  display: flex;
+  align-items: center; /* align items to center by default */
+}
+
+.profile-picture {
+  width: 32px;
+  height: 32px;
+  margin-right: 12px;
+  border-radius: 50%;
+  align-self: center;
+
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+</style>
 <body>
   <h1>Chat</h1>
   <form id="client-form">
-    <input type="text" id="prompt" name="prompt" required>
-    <button type="submit">Send</button>
+    <input type="text" id="prompt" name="prompt" placeholder="Ask a question" autocomplete="off"  required>
+   
   </form>
 
   <div id="messages"></div>
@@ -16,8 +75,12 @@
     const form = document.querySelector('#client-form');
     const messagesDiv = document.querySelector('#messages');
 
-    function addMessageToDiv(prompt, messagesDiv) {
+    function addMessageToDiv(prompt, messagesDiv, image) {
       const message = document.createElement('div');
+      message.classList.add('message');
+      const profilePicture = document.createElement('img');
+      profilePicture.src = image; // set profile picture URL
+      profilePicture.classList.add('profile-picture'); // add class to profile picture element
       
       // convert line breaks to <br>
       prompt = prompt.replace(/\n/g, "<br>");
@@ -27,8 +90,13 @@
       
       // convert numbered lists to <ol>
       prompt = prompt.replace(/\d+\. (.*)/g, "<ol><li>$1</li></ol>");
+
+      const text = document.createElement('div');
+      text.innerHTML = prompt;
       
-      message.innerHTML = prompt;
+      message.appendChild(profilePicture); // add profile picture element first
+      message.appendChild(text);
+
       messagesDiv.appendChild(message);
     }
 
@@ -38,7 +106,8 @@
       const promptInput = document.querySelector('#prompt');
       const prompt = promptInput.value;
 
-      addMessageToDiv(prompt, messagesDiv);
+      addMessageToDiv(prompt, messagesDiv, 'dad.jpg');
+      promptInput.value = ''; 
 
       const data = { prompt };
 
@@ -57,7 +126,7 @@
         const mResponse = await messageResponse.json();
         console.log(mResponse[0].messages[mResponse[0].messages.length-1].content);
         const textResponse = mResponse[0].messages[mResponse[0].messages.length-1].content;
-        addMessageToDiv(textResponse, messagesDiv);
+        addMessageToDiv(textResponse, messagesDiv, 'open.png');
       } catch (error) {
         console.error(error);
       }
