@@ -18,6 +18,7 @@ const pool = new Pool({
   port: 5432,
 });
 
+
 require('dotenv').config()
 
 const openAI_SECRET_KEY = process.env.OPENAI_SECRET_KEY
@@ -27,18 +28,25 @@ const configuration = new Configuration({
 })
 const openai = new OpenAIApi(configuration)
 
+const messages = [
+    {
+        "role": 'system', 
+        "content": 'You are a wonderfully helpful assistant.'
+    }
+]
+storeMessages('INSERT INTO chat_messages (messages) VALUES ($1)');
+
+async function storeMessages(query){
+    console.log(messages)
+    const client = await pool.connect()
+    await client.query(query, [JSON.stringify(messages)])
+    client.release()
+}
+
 async function sendPrompt(input) {
     const model = 'gpt-3.5-turbo'
-    const messages = [
-        {
-            "role": 'system', 
-            "content": 'You are a wonderfully helpful assistant.'
-        },
-        {
-            "role": 'user', 
-            "content": input
-        }
-    ]
+    const userInput = {"role": 'user', "content": input}
+    messages.push(userInput)
 
     const completion = await openai.createChatCompletion({
         model,
@@ -46,11 +54,8 @@ async function sendPrompt(input) {
     })
     const APIResponse = completion.data.choices[0].message
     messages.push(APIResponse)
+    storeMessages('UPDATE chat_messages SET messages = $1 WHERE id = (SELECT id FROM chat_messages ORDER BY id ASC LIMIT 1)');
     
-    const client = await pool.connect()
-    const query = 'INSERT INTO chat_messages (messages) VALUES ($1)'
-    await client.query(query, [JSON.stringify(messages)])
-    client.release()
     return completion.data.choices
 }
 
