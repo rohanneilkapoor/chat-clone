@@ -94,10 +94,17 @@
       const text = document.createElement('div');
       text.innerHTML = prompt;
       
-      message.appendChild(profilePicture); // add profile picture element first
-      message.appendChild(text);
+      if(prompt != "Loading..." && image == "open.png"){
+        //replace last child element with prompt
+        const lastChildText = messagesDiv.lastElementChild.lastElementChild;
+        lastChildText.textContent = prompt;
 
-      messagesDiv.appendChild(message);
+      } else{
+        message.appendChild(profilePicture); // add profile picture element first
+        message.appendChild(text);
+
+        messagesDiv.appendChild(message);
+      }
     }
 
     form.addEventListener('submit', async (event) => {
@@ -107,6 +114,7 @@
       const prompt = promptInput.value;
 
       addMessageToDiv(prompt, messagesDiv, 'dad.jpg');
+      addMessageToDiv("Loading...", messagesDiv, 'open.png');
       promptInput.value = ''; 
 
       const data = { prompt };
