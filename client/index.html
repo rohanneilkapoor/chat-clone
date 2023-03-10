@@ -17,10 +17,20 @@
     const messagesDiv = document.querySelector('#messages');
 
     function addMessageToDiv(prompt, messagesDiv) {
-      const message = document.createElement('div');
-      message.textContent = prompt;
-      messagesDiv.appendChild(message);
-    }
+  const message = document.createElement('div');
+  
+  // convert line breaks to <br>
+  prompt = prompt.replace(/\n/g, "<br>");
+  
+  // convert bullets to <ul>
+  prompt = prompt.replace(/• (.*)/g, "<ul><li>$1</li></ul>");
+  
+  // convert numbered lists to <ol>
+  prompt = prompt.replace(/\d+\. (.*)/g, "<ol><li>$1</li></ol>");
+  
+  message.innerHTML = prompt;
+  messagesDiv.appendChild(message);
+}
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault(); // Prevent the default form submission behavior
