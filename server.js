@@ -19,7 +19,6 @@ const pool = new Pool({
   port: 5432,
 });
 
-
 require('dotenv').config()
 
 const openAI_SECRET_KEY = process.env.OPENAI_SECRET_KEY
@@ -28,6 +27,8 @@ const configuration = new Configuration({
     apiKey: openAI_SECRET_KEY
 })
 const openai = new OpenAIApi(configuration)
+
+const queue = [];
 
 fs.readFile('ORDERS.csv', 'utf8', (err, data) => {
     if (err) {
@@ -68,16 +69,32 @@ fs.readFile('ORDERS.csv', 'utf8', (err, data) => {
         return completion.data.choices
     }
     
+    function queueHandler() {
+        if (queue.length > 0) {
+            const { prompt, res } = queue.shift();
+            sendPrompt(prompt)
+                .then(answer => {
+                    res.status(200).json({
+                        'message': answer
+                    });
+                    queueHandler();
+                })
+                .catch(error => {
+                    res.status(500).json({
+                        'error': error
+                    });
+                    queueHandler();
+                });
+        }
+    }
     
     //route
     app.post('/api', async (req, res) => {
-        const {prompt} = req.body
-        //console.log(req.body)
-        const answer = await sendPrompt(prompt)
-        res.status(200).json({
-            'message': answer
-        })
-    
+        const { prompt } = req.body;
+        queue.push({ prompt, res });
+        if (queue.length === 1) {
+            queueHandler();
+        }
     })
     
     app.get('/messages', async (req, res) => {
@@ -87,12 +104,11 @@ fs.readFile('ORDERS.csv', 'utf8', (err, data) => {
         client.release();
       
         res.status(200).send(result.rows);
-      });
+    });
     
     app.get('/', (req, res)=>{
         res.send("Welcome to your server")
     })
     
     app.listen(port, () => console.log(`Server has started on port: ${port}`))
-  });
-
+});
