@@ -1,6 +1,7 @@
 import { Configuration, OpenAIApi } from 'openai'
 import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
+const fs = require('fs');
 const express = require('express')
 const cors = require('cors')
 const app = express()
@@ -28,60 +29,70 @@ const configuration = new Configuration({
 })
 const openai = new OpenAIApi(configuration)
 
-const messages = [
-    {
-        "role": 'system', 
-        "content": 'You are a wonderfully helpful assistant.'
+fs.readFile('ORDERS.csv', 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+      return;
     }
-]
-storeMessages('INSERT INTO chat_messages (messages) VALUES ($1)');
+    // Do something with the CSV string
+    //console.log(data);
 
-async function storeMessages(query){
-    console.log(messages)
-    const client = await pool.connect()
-    await client.query(query, [JSON.stringify(messages)])
-    client.release()
-}
-
-async function sendPrompt(input) {
-    const model = 'gpt-3.5-turbo'
-    const userInput = {"role": 'user', "content": input}
-    messages.push(userInput)
-
-    const completion = await openai.createChatCompletion({
-        model,
-        messages
-    })
-    const APIResponse = completion.data.choices[0].message
-    messages.push(APIResponse)
-    storeMessages('UPDATE chat_messages SET messages = $1 WHERE id = (SELECT id FROM chat_messages ORDER BY id ASC LIMIT 1)');
+    const messages = [
+        {
+            "role": 'system', 
+            "content": 'You are a wonderfully helpful assistant. I am giving you a CSV from an ERP system of a manufacturing company. I will ask you questions about it. Here is the data: ' + data
+        }
+    ]
+    storeMessages('INSERT INTO chat_messages (messages) VALUES ($1)');
     
-    return completion.data.choices
-}
-
-
-//route
-app.post('/api', async (req, res) => {
-    const {prompt} = req.body
-    console.log(req.body)
-    const answer = await sendPrompt(prompt)
-    res.status(200).json({
-        'message': answer
+    async function storeMessages(query){
+        console.log(messages)
+        const client = await pool.connect()
+        await client.query(query, [JSON.stringify(messages)])
+        client.release()
+    }
+    
+    async function sendPrompt(input) {
+        const model = 'gpt-3.5-turbo'
+        const userInput = {"role": 'user', "content": input}
+        messages.push(userInput)
+    
+        const completion = await openai.createChatCompletion({
+            model,
+            messages
+        })
+        const APIResponse = completion.data.choices[0].message
+        messages.push(APIResponse)
+        storeMessages('UPDATE chat_messages SET messages = $1 WHERE id = (SELECT id FROM chat_messages ORDER BY id ASC LIMIT 1)');
+        
+        return completion.data.choices
+    }
+    
+    
+    //route
+    app.post('/api', async (req, res) => {
+        const {prompt} = req.body
+        //console.log(req.body)
+        const answer = await sendPrompt(prompt)
+        res.status(200).json({
+            'message': answer
+        })
+    
     })
-
-})
-
-app.get('/messages', async (req, res) => {
-    const client = await pool.connect();
-    const query = 'SELECT messages FROM chat_messages';
-    const result = await client.query(query);
-    client.release();
-  
-    res.status(200).send(result.rows);
+    
+    app.get('/messages', async (req, res) => {
+        const client = await pool.connect();
+        const query = 'SELECT messages FROM chat_messages';
+        const result = await client.query(query);
+        client.release();
+      
+        res.status(200).send(result.rows);
+      });
+    
+    app.get('/', (req, res)=>{
+        res.send("Welcome to your server")
+    })
+    
+    app.listen(port, () => console.log(`Server has started on port: ${port}`))
   });
 
-app.get('/', (req, res)=>{
-    res.send("Welcome to your server")
-})
-
-app.listen(port, () => console.log(`Server has started on port: ${port}`))

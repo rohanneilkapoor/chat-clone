@@ -87,13 +87,13 @@
       profilePicture.classList.add('profile-picture'); // add class to profile picture element
       
       // convert line breaks to <br>
-      prompt = prompt.replace(/\n/g, "<br>");
+      //prompt = prompt.replace(/\n/g, "<br>");
       
       // convert bullets to <ul>
-      prompt = prompt.replace(/• (.*)/g, "<ul><li>$1</li></ul>");
+      //prompt = prompt.replace(/• (.*)/g, "<ul><li>$1</li></ul>");
       
       // convert numbered lists to <ol>
-      prompt = prompt.replace(/\d+\. (.*)/g, "<ol><li>$1</li></ol>");
+      //prompt = prompt.replace(/\d+\. (.*)/g, "<ol><li>$1</li></ol>");
 
       const text = document.createElement('div');
       text.innerHTML = prompt;
@@ -106,7 +106,7 @@
       } else{
         message.appendChild(profilePicture); // add profile picture element first
         message.appendChild(text);
-
+        
         messagesDiv.appendChild(message);
       }
     }
