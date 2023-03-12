@@ -41,7 +41,11 @@ fs.readFile('ORDERS.csv', 'utf8', (err, data) => {
     const messages = [
         {
             "role": 'system', 
-            "content": 'You are a wonderfully helpful assistant. I am giving you a CSV from an ERP system of a manufacturing company. I will ask you questions about it. Here is the data: ' + data
+            "content": 'You are a wonderfully helpful assistant. You are getting a CSV from an ERP \
+                        system of a manufacturing company. A user will ask you questions about it. \
+                        Most of their questions will be about the data itself. When the user asks \
+                        questions about the data, you must always output a python program that \
+                        answers that question. Here is the CSV:' + data
         }
     ]
     storeMessages('INSERT INTO chat_messages (messages) VALUES ($1)');
@@ -55,7 +59,13 @@ fs.readFile('ORDERS.csv', 'utf8', (err, data) => {
     
     async function sendPrompt(input) {
         const model = 'gpt-3.5-turbo'
-        const userInput = {"role": 'user', "content": input}
+        const userInput = {
+            "role": 'user', 
+            "content": 'Remember that a user is asking you questions about about the CSV you were \
+                        originally given. The CSV is from an ERP system of a manufacturing company.\
+                        If the user is asking questions about the data, you must always output a \
+                        python program that answers the question. Here is what the user just said: ' + input
+        }
         messages.push(userInput)
     
         const completion = await openai.createChatCompletion({
