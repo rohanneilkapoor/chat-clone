@@ -6,6 +6,9 @@ const express = require('express')
 const cors = require('cors')
 const app = express()
 const port = 8080
+const { promisify } = require('util')
+const parseString = promisify(require('xml2js').parseString)
+const { spawn } = require('child_process');
 
 app.use(express.json())
 app.use(require('cors')())
@@ -35,17 +38,15 @@ fs.readFile('ORDERS.csv', 'utf8', (err, data) => {
       console.error(err);
       return;
     }
-    // Do something with the CSV string
-    //console.log(data);
 
     const messages = [
         {
             "role": 'system', 
             "content": 'You are a wonderfully helpful assistant. You are getting a CSV from an ERP \
-                        system of a manufacturing company. A user will ask you questions about it. \
-                        Most of their questions will be about the data itself. When the user asks \
-                        questions about the data, you must always output a python program that \
-                        answers that question. Here is the CSV:' + data
+                        system of a manufacturing company. The name of the CSV is "ORDERS.csv" A \
+                        user will ask you questions about it. Most of their questions will be about \
+                        the data itself. When the user asks questions about the data, you must \
+                        always output a python program that answers that question. Here is the CSV:' + data
         }
     ]
     storeMessages('INSERT INTO chat_messages (messages) VALUES ($1)');
@@ -64,7 +65,8 @@ fs.readFile('ORDERS.csv', 'utf8', (err, data) => {
             "content": 'Remember that a user is asking you questions about about the CSV you were \
                         originally given. The CSV is from an ERP system of a manufacturing company.\
                         If the user is asking questions about the data, you must always output a \
-                        python program that answers the question. Here is what the user just said: ' + input
+                        python program that answers the question. The name of the csv file is \
+                        "ORDERS.csv" Here is what the user just said: ' + input
         }
         messages.push(userInput)
     
@@ -73,11 +75,55 @@ fs.readFile('ORDERS.csv', 'utf8', (err, data) => {
             messages
         })
         const APIResponse = completion.data.choices[0].message
+        const APIResponseText = APIResponse.content
+        const regex1 = /```python\n([\s\S]*)```/
+        const regex2 = /(```\s*import[\s\S]*?```)/
+        const match1 = regex1.exec(APIResponseText)
+        const match2 = regex2.exec(APIResponseText)
+        if (match1) {
+            const pythonCode = match1[1];
+            console.log("HERE IS THE PYTHON CODE1", pythonCode)
+            runPython(pythonCode)
+            completion.data.choices[0].message.content = await runPython(pythonCode)
+          } else if (match2) {
+            const pythonCode = match2[1];
+            console.log("HERE IS THE PYTHON CODE2", pythonCode)
+            runPython(pythonCode)
+            completion.data.choices[0].message.content = await runPython(pythonCode)
+          } 
+          else {
+            console.log("Python code not found")
+        }
         messages.push(APIResponse)
         storeMessages('UPDATE chat_messages SET messages = $1 WHERE id = (SELECT id FROM chat_messages ORDER BY id ASC LIMIT 1)');
         
         return completion.data.choices
     }
+
+    async function runPython(pythonCode) {
+        // Spawn a new Python process
+        const pythonProcess = spawn('python3', ['-c', pythonCode]);
+      
+        // Capture output from the Python process
+        let output = '';
+        pythonProcess.stdout.on('data', (data) => {
+          output += data.toString();
+        });
+      
+        // Handle process completion
+        const exitCode = await new Promise((resolve) => {
+          pythonProcess.on('close', (code) => {
+            resolve(code);
+          });
+        });
+      
+        if (exitCode !== 0) {
+          console.error(`Python process exited with code ${exitCode}`);
+          return '';
+        }
+      
+        return output.trim();
+      }
     
     function queueHandler() {
         if (queue.length > 0) {
