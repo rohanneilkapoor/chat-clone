@@ -77,18 +77,18 @@ fs.readFile('ORDERS.csv', 'utf8', (err, data) => {
         const APIResponse = completion.data.choices[0].message
         const APIResponseText = APIResponse.content
         const regex1 = /```python\n([\s\S]*)```/
-        const regex2 = /(```\s*import[\s\S]*?```)/
+        const regex2 = /```(?:\s*)(import[\s\S]*?)```/
         const match1 = regex1.exec(APIResponseText)
         const match2 = regex2.exec(APIResponseText)
         if (match1) {
             const pythonCode = match1[1];
             console.log("HERE IS THE PYTHON CODE1", pythonCode)
-            runPython(pythonCode)
+            //runPython(pythonCode)
             completion.data.choices[0].message.content = await runPython(pythonCode)
           } else if (match2) {
             const pythonCode = match2[1];
             console.log("HERE IS THE PYTHON CODE2", pythonCode)
-            runPython(pythonCode)
+            //runPython(pythonCode)
             completion.data.choices[0].message.content = await runPython(pythonCode)
           } 
           else {
