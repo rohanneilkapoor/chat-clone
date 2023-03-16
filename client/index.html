@@ -126,10 +126,10 @@
 
         const result = await response.json();
         console.log(result);
-        const messageResponse = await fetch('http://localhost:8080/messages');
-        const mResponse = await messageResponse.json();
-        console.log(mResponse[0].messages[mResponse[0].messages.length-1].content);
-        const textResponse = mResponse[0].messages[mResponse[0].messages.length-1].content;
+        const codeOutputResponse = await fetch('http://localhost:8080/code_output');
+        const cResponse = await codeOutputResponse.json();
+        console.log(cResponse[0].output);
+        const textResponse = cResponse[cResponse.length-1].output;
         addMessageToDiv(textResponse, messagesDiv, 'open.png');
       } catch (error) {
         console.error(error);

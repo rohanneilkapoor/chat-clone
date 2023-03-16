@@ -55,7 +55,7 @@ fs.readFile('ORDERS.csv', 'utf8', (err, data) => {
     storeMessages('INSERT INTO chat_messages (messages) VALUES ($1)');
     
     async function storeMessages(query){
-        console.log(messages)
+        //console.log(messages)
         const client = await pool.connect()
         await client.query(query, [JSON.stringify(messages)])
         client.release()
@@ -75,7 +75,11 @@ fs.readFile('ORDERS.csv', 'utf8', (err, data) => {
                         python program that answers the question. This python program should work 100% \
                         of the time. You need to be extremely careful to make sure it always works and \
                         always returns the correct output. The name of the csv file is \
-                        "ORDERS.csv" Here is what the user just said: ' + input
+                        "ORDERS.csv" Here is what the user just said: ' + input + '. Your response should\
+                        only contain the code and no other text. I am going to copy and paste your entire \
+                        response into a code editor so in order for it to run, you cannot include any text\
+                        other than the code. You also need to be careful not to include any newline \
+                        characters since that will also result in a syntax error.'
         }
         messages.push(userInput)
     
@@ -87,28 +91,11 @@ fs.readFile('ORDERS.csv', 'utf8', (err, data) => {
         const APIResponse = completion.data.choices[0].message
         const APIResponseText = APIResponse.content
         console.log("API RESPONSE TEXT IS: ", APIResponseText)
-        const regex1 = /```python\n([\s\S]*)```/
-        const regex2 = /```(?:\s*)(import[\s\S]*?)```/
-        const match1 = regex1.exec(APIResponseText)
-        const match2 = regex2.exec(APIResponseText)
-        if (match1) {
-            const pythonCode = match1[1];
-            console.log("HERE IS THE PYTHON CODE1", pythonCode)
-            //runPython(pythonCode)
-            completion.data.choices[0].message.content = await runPython(pythonCode)
-            messages.push(APIResponse)
-            storeMessages('UPDATE chat_messages SET messages = $1 WHERE id = (SELECT id FROM chat_messages ORDER BY id ASC LIMIT 1)');
-          } else if (match2) {
-            const pythonCode = match2[1];
-            console.log("HERE IS THE PYTHON CODE2", pythonCode)
-            //runPython(pythonCode)
-            completion.data.choices[0].message.content = await runPython(pythonCode)
-            messages.push(APIResponse)
-            storeMessages('UPDATE chat_messages SET messages = $1 WHERE id = (SELECT id FROM chat_messages ORDER BY id ASC LIMIT 1)');
-          } 
-          else {
-            console.log("Python code not found (inside sendPrompt function)")
-        }
+        //completion.data.choices[0].message.content = await runPython(APIResponseText)
+        let run = await runPython(APIResponseText)
+        messages.push(APIResponse)
+        storeMessages('UPDATE chat_messages SET messages = $1 WHERE id = (SELECT id FROM chat_messages ORDER BY id ASC LIMIT 1)');
+    
         
         return completion.data.choices
     }
@@ -141,7 +128,12 @@ fs.readFile('ORDERS.csv', 'utf8', (err, data) => {
             console.error('Error output:', errorOutput);
             fixError(pythonCode, errorOutput)
         }
-    
+        const formattedOutput = output.trim()
+        console.log("CODE OUTPUT IS: ", formattedOutput)
+        const client = await pool.connect()
+        const query = 'INSERT INTO code_output (output) VALUES ($1)';
+        await client.query(query, [formattedOutput])
+        client.release()
         return output.trim();
     }
 
@@ -160,29 +152,12 @@ fs.readFile('ORDERS.csv', 'utf8', (err, data) => {
         })
         const APIResponse = completion.data.choices[0].message
         const APIResponseText = APIResponse.content
-        console.log("API RESPONSE TEXT IS: ", APIResponseText)
-        const regex1 = /```python\n([\s\S]*)```/
-        const regex2 = /```(?:\s*)(import[\s\S]*?)```/
-        const match1 = regex1.exec(APIResponseText)
-        const match2 = regex2.exec(APIResponseText)
-        if (match1) {
-            const pythonCode = match1[1];
-            console.log("HERE IS THE PYTHON CODE1", pythonCode)
-            //runPython(pythonCode)
-            completion.data.choices[0].message.content = await runPython(pythonCode)
-            messages.push(APIResponse)
-            storeMessages('UPDATE chat_messages SET messages = $1 WHERE id = (SELECT id FROM chat_messages ORDER BY id ASC LIMIT 1)');
-          } else if (match2) {
-            const pythonCode = match2[1];
-            console.log("HERE IS THE PYTHON CODE2", pythonCode)
-            //runPython(pythonCode)
-            completion.data.choices[0].message.content = await runPython(pythonCode)
-            messages.push(APIResponse)
-            storeMessages('UPDATE chat_messages SET messages = $1 WHERE id = (SELECT id FROM chat_messages ORDER BY id ASC LIMIT 1)');
-          } 
-          else {
-            console.log("Python code not found (inside fixError function)")
-        }
+        console.log("API RESPONSE IS: ", APIResponse)
+        //completion.data.choices[0].message.content = await runPython(APIResponseText)
+        let run = await runPython(APIResponseText)
+        messages.push(APIResponse)
+        storeMessages('UPDATE chat_messages SET messages = $1 WHERE id = (SELECT id FROM chat_messages ORDER BY id ASC LIMIT 1)');
+    
         
         return completion.data.choices
 
@@ -219,6 +194,15 @@ fs.readFile('ORDERS.csv', 'utf8', (err, data) => {
     app.get('/messages', async (req, res) => {
         const client = await pool.connect();
         const query = 'SELECT messages FROM chat_messages';
+        const result = await client.query(query);
+        client.release();
+      
+        res.status(200).send(result.rows);
+    });
+
+    app.get('/code_output', async (req, res) => {
+        const client = await pool.connect();
+        const query = 'SELECT output FROM code_output';
         const result = await client.query(query);
         client.release();
       
