@@ -79,7 +79,7 @@ fs.readFile('ORDERS.csv', 'utf8', (err, data) => {
                         only contain the code and no other text. I am going to copy and paste your entire \
                         response into a code editor so in order for it to run, you cannot include any text\
                         other than the code. You also need to be careful not to include any newline \
-                        characters since that will also result in a syntax error.'
+                        characters since that will also result in a syntax error. Also do not write ```python'
         }
         messages.push(userInput)
     
@@ -138,10 +138,20 @@ fs.readFile('ORDERS.csv', 'utf8', (err, data) => {
     }
 
     async function fixError(pythonCode, errorOutput){
-        const model = 'gpt-3.5-turbo'
+        const model = 'gpt-4'
         const userInput = {
             "role": 'user', 
-            "content": 'I have the following python code: ' + pythonCode + "I'm getting the following error: " + errorOutput
+            "content": 'I have the following python code: ' + pythonCode + "I'm getting the following error: " + errorOutput + " \
+                        Remember, you are the best programmer in the world. You write code very carefully, \
+                        considering all edge cases to make sure the code works correctly 100% of \
+                        the time. You triple check your code and you do not hesitate to write long \
+                        code if it means your code is more likely to work correctly. This python program should work 100% \
+                        of the time. You need to be extremely careful to make sure it always works and \
+                        always returns the correct output. Your response should\
+                        only contain the code and no other text. I am going to copy and paste your entire \
+                        response into a code editor so in order for it to run, you cannot include any text\
+                        other than the code. You also need to be careful not to include any newline \
+                        characters since that will also result in a syntax error. Also do not write ```python"
         }
         messages.push(userInput)
     
