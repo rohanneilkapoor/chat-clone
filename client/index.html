@@ -13,6 +13,15 @@
         font-display: swap;
         font-style: normal;
   }
+  @font-face {
+    font-family: 'Satoshi-Medium';
+    src: url('../fonts/Satoshi-Medium.woff2') format('woff2'),
+        url('../fonts/Satoshi-Medium.woff') format('woff'),
+        url('../fonts/Satoshi-Medium.ttf') format('truetype');
+        font-weight: 400;
+        font-display: swap;
+        font-style: normal;
+  }
   body {
       font-family: 'Satoshi-Regular', sans-serif;
       max-width: 700px;
@@ -54,7 +63,7 @@
 .profile-picture {
   width: 32px;
   height: 32px;
-  margin-right: 12px;
+  margin-right: 16px;
   border-radius: 50%;
   align-self: center;
 
@@ -70,18 +79,143 @@ h1{
   padding-bottom: 28px;
 }
 
+.csv-upload-label {
+  display: inline-block;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  padding-left: 40px;
+  padding-right: 40px;
+  font-size: 18px;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  border: 1px solid #E3E3E3;
+  background-color: white;
+  text-align: center;
+  cursor: pointer;
+}
+
+.csv-upload-label:hover {
+  box-shadow: 0 0px 0px rgba(0, 0, 0, 0.2);
+}
+
+.hidden {
+  display: none;
+}
+
+.csv-upload-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+
+.uploaded-text {
+  color: #666666;
+}
+
+.file-name-pill {
+  background-color: #e8e8e8;
+  border-radius: 12px;
+  padding: 4px 12px;
+  border-radius: 24px;
+  font-family: 'Satoshi-Medium', sans-serif;
+}
+
 </style>
 <body>
-  <h1>Chat</h1>
-  <form id="client-form">
+  <div class="csv-upload-wrapper">
+    <label for="csv-upload" class="csv-upload-label">Upload CSV</label>
+  </div>
+
+  <input type="file" id="csv-upload" name="csv-upload" accept=".csv" style="display:none;">
+  <h1 class="hidden">Chat</h1>
+  <form id="client-form" class="hidden">
     <input type="text" id="prompt" name="prompt" placeholder="Ask a question" autocomplete="off"  required>
    
   </form>
 
-  <div id="messages"></div>
-  <div class="spacing"></div>
+  <div id="messages" class="hidden"></div>
+  <div class="spacing hidden"></div>
 
   <script>
+    //code for csv upload
+    const csvUpload = document.querySelector('#csv-upload');
+    const csvUploadLabel = document.querySelector('.csv-upload-label');
+    const hiddenElements = document.querySelectorAll('.hidden');
+
+    csvUpload.addEventListener('change', async (event) => {
+      if (event.target.files && event.target.files.length > 0) {
+        // Hide the CSV upload button
+        csvUploadLabel.style.display = 'none';
+
+        // Show the rest of the UI
+        hiddenElements.forEach((element) => {
+          element.classList.remove('hidden');
+        });
+
+        // Display the uploaded file name
+        const file = event.target.files[0];
+        const fileName = file.name;
+        displayUploadedFile(fileName);
+
+        // Send the file to the server
+        const formData = new FormData();
+        formData.append('csv', file);
+        try {
+          const response = await fetch('http://localhost:8080/upload_csv', {
+            method: 'POST',
+            body: formData,
+          });
+          if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    });
+
+    function displayUploadedFile(fileName) {
+    const messagesDiv = document.querySelector('#messages');
+    const uploadedFileMessage = `
+      <div class="message">
+        <img src="dad.jpg" class="profile-picture">
+        <div><span class="uploaded-text">Uploaded</span> <span class="file-name-pill">${fileName}</span></div>
+      </div>
+      <div class="message">
+        <img src="open.png" class="profile-picture">
+        <div>Hi there. Ask me questions about <span class="file-name-pill">${fileName}</span></div>
+      </div>
+    `;
+    messagesDiv.innerHTML = uploadedFileMessage;
+  }
+
+    csvUpload.addEventListener('change', (event) => {
+      if (event.target.files && event.target.files.length > 0) {
+        // Hide the CSV upload button
+        csvUploadLabel.style.display = 'none';
+
+        // Show the rest of the UI
+        hiddenElements.forEach((element) => {
+          element.classList.remove('hidden');
+        });
+
+        // Display the uploaded file name
+        const fileName = event.target.files[0].name;
+        displayUploadedFile(fileName);
+      }
+    });
+
+
+
+
+
+
     const form = document.querySelector('#client-form');
     const messagesDiv = document.querySelector('#messages');
 

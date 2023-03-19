@@ -9,6 +9,12 @@ const port = 8080
 const { promisify } = require('util')
 const parseString = promisify(require('xml2js').parseString)
 const { spawn } = require('child_process');
+const multer = require('multer');
+const fsPromises = fs.promises;
+
+// Configure multer for file storage
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 app.use(express.json())
 app.use(require('cors')())
@@ -32,6 +38,42 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration)
 
 const queue = [];
+let csvContent = "";
+
+
+app.post('/upload_csv', upload.single('csv'), async (req, res) => {
+    const file = req.file;
+    if (!file) {
+        console.log("didn't do it");
+        return res.status(400).send({ message: 'No file uploaded.' });
+    }
+
+    const fileName = file.originalname;
+    const content = file.buffer.toString('utf8');
+    csvContent = content;
+
+    // Write the content to the ORDERS.csv file
+    try {
+        await fsPromises.writeFile('ORDERS.csv', content);
+        console.log("Wrote content to ORDERS.csv");
+    } catch (error) {
+        console.error("Failed to write content to ORDERS.csv:", error);
+    }
+
+    try {
+        const client = await pool.connect();
+        const query = 'INSERT INTO csvs (file_name, content) VALUES ($1, $2)';
+        await client.query(query, [fileName, content]);
+        client.release();
+
+        res.status(200).send({ message: 'CSV file uploaded and stored in the database.' });
+        console.log("stored it in the db");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: 'Failed to store CSV file in the database.' });
+        console.log("there was some error");
+    }
+});
 
 fs.readFile('ORDERS.csv', 'utf8', (err, data) => {
     if (err) {
@@ -55,7 +97,7 @@ fs.readFile('ORDERS.csv', 'utf8', (err, data) => {
     storeMessages('INSERT INTO chat_messages (messages) VALUES ($1)');
     
     async function storeMessages(query){
-        //console.log(messages)
+        console.log(messages)
         const client = await pool.connect()
         await client.query(query, [JSON.stringify(messages)])
         client.release()
@@ -92,8 +134,8 @@ fs.readFile('ORDERS.csv', 'utf8', (err, data) => {
         const APIResponseText = APIResponse.content
         console.log("API RESPONSE TEXT IS: ", APIResponseText)
         //completion.data.choices[0].message.content = await runPython(APIResponseText)
-        let run = await runPython(APIResponseText)
         messages.push(APIResponse)
+        let run = await runPython(APIResponseText)
         storeMessages('UPDATE chat_messages SET messages = $1 WHERE id = (SELECT id FROM chat_messages ORDER BY id ASC LIMIT 1)');
     
         
