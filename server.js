@@ -134,7 +134,7 @@ async function storeMessages(query){
 
 async function sendPrompt(input) {
     console.log("top of send prompt")
-    const model = 'gpt-4'
+    const model = 'gpt-3.5-turbo'
     const userInput = {
         "role": 'user', 
         "content": 'Remember, you are the best programmer in the world. You write code very carefully, \
@@ -213,7 +213,7 @@ async function runPython(pythonCode) {
 }
 
 async function fixError(pythonCode, errorOutput){
-    const model = 'gpt-4'
+    const model = 'gpt-3.5-turbo'
     const userInput = {
         "role": 'user', 
         "content": 'I have the following python code: ' + pythonCode + "I'm getting the following error: " + errorOutput + " \

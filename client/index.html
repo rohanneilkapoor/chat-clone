@@ -24,7 +24,6 @@
   }
   body {
       font-family: 'Satoshi-Regular', sans-serif;
-      max-width: 700px;
       margin: 0 auto;
       font-size: 18px;
       line-height: 28px;
@@ -38,13 +37,10 @@
   #client-form {
     position: fixed;
     bottom: 0;
-    left: 0;
-    right: 0;
-    margin: 0 auto;
-    width: 100%;
-    max-width: 700px;
-    padding-top: 32px;
     padding-bottom: 32px;
+    width: 100%;
+    max-width: 600px; /* adjust as needed */
+    box-sizing: border-box;
   }
   input {
     font-family: 'Satoshi-Regular', sans-serif;
@@ -54,6 +50,7 @@
     border-radius: 4px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     border: 1px solid #E3E3E3;
+    box-sizing: border-box;
   }
   input:focus {
     outline: none;
@@ -130,23 +127,89 @@ h1{
   font-family: 'Satoshi-Medium', sans-serif;
 }
 
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.chat-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  z-index: 1;
+}
+
+.chat-container {
+  width: 600px;
+  flex-grow: 1;
+  max-height: calc(100vh - 32px - 16px - 1px); /* 32px for padding, 16px for #client-form padding, 1px for border-top */
+  padding: 32px;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background-color: white;
+  overflow-y: auto; 
+  border-left: 1px solid #E3E3E3;
+  box-shadow: 0px -1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.csv-container {
+  position: fixed;
+  left: 0;
+  right: 660px; /* adjust as needed */
+  top: 0;
+  bottom: 0;
+  padding: 0px;
+  box-sizing: border-box;
+  overflow-x: auto;
+}
+
+.csv-container table {
+  font-size: 13px;
+  line-height: 17px;
+  border-collapse: collapse;
+  border: 1px solid #E3E3E3;
+}
+
+.csv-container th, .csv-container td {
+  padding: 8px;
+  border: 1px solid #E3E3E3;
+}
+
+
 </style>
 <body>
   <div class="csv-upload-wrapper">
     <label for="csv-upload" class="csv-upload-label">Upload CSV</label>
   </div>
-
   <input type="file" id="csv-upload" name="csv-upload" accept=".csv" style="display:none;">
-  <h1 class="hidden">Chat</h1>
-  <form id="client-form" class="hidden">
-    <input type="text" id="prompt" name="prompt" placeholder="Ask a question" autocomplete="off"  required>
-   
-  </form>
 
-  <div id="messages" class="hidden"></div>
-  <div class="spacing hidden"></div>
+  <div class = "container hidden">
+    <div class = "chat-wrapper">
+      <div class="chat-container hidden">
+        <h1 class="hidden">Chat</h1>
+        <form id="client-form" class="hidden">
+          <input type="text" id="prompt" name="prompt" placeholder="Ask a question" autocomplete="off"  required>
+        
+        </form>
+
+        <div id="messages" class="hidden"></div>
+        <div class="spacing hidden"></div>
+      </div>
+    </div>
+    <div class="csv-container hidden">
+      <!-- CSV data code goes here -->
+    </div>
+  </div>
+  
+  
 
   <script>
+
+
+
+
     //code for csv upload
     const csvUpload = document.querySelector('#csv-upload');
     const csvUploadLabel = document.querySelector('.csv-upload-label');
@@ -184,6 +247,7 @@ h1{
       }
     });
 
+    
     function displayUploadedFile(fileName) {
       const messagesDiv = document.querySelector('#messages');
       const uploadedFileMessage = `
@@ -197,23 +261,59 @@ h1{
         </div>
       `;
       messagesDiv.innerHTML = uploadedFileMessage;
+
+      const csvContainer = document.querySelector('.csv-container');
+      const uploadedCSV = `
+        <table id="csv-table"></table>
+      `;
+      csvContainer.innerHTML = uploadedCSV;
+
+      // Read the contents of the CSV file and display in a table
+      const fileInput = document.querySelector('#csv-upload');
+      const reader = new FileReader();
+      reader.readAsText(fileInput.files[0]);
+      reader.onload = function (event) {
+        const csv = event.target.result;
+        const table = document.querySelector('#csv-table');
+        let rows = csv.split('\n');
+        // Remove last row if it's empty
+        if (rows[rows.length - 1].trim() === '') {
+          rows.pop();
+        }
+        // Parse CSV data
+        for (let i = 0; i < rows.length; i++) {
+          const cells = parseCSVRow(rows[i]);
+          const row = document.createElement('tr');
+          for (let j = 0; j < cells.length; j++) {
+            const cell = document.createElement('td');
+            cell.textContent = cells[j];
+            row.appendChild(cell);
+          }
+          table.appendChild(row);
+        }
+      };
     }
 
-    csvUpload.addEventListener('change', (event) => {
-      if (event.target.files && event.target.files.length > 0) {
-        // Hide the CSV upload button
-        csvUploadLabel.style.display = 'none';
-
-        // Show the rest of the UI
-        hiddenElements.forEach((element) => {
-          element.classList.remove('hidden');
-        });
-
-        // Display the uploaded file name
-        const fileName = event.target.files[0].name;
-        displayUploadedFile(fileName);
+    // Helper function to parse a row of CSV data
+    function parseCSVRow(row) {
+      let cells = [];
+      let currentCell = '';
+      let withinQuotes = false;
+      for (let i = 0; i < row.length; i++) {
+        const char = row.charAt(i);
+        if (char === ',' && !withinQuotes) {
+          cells.push(currentCell.trim());
+          currentCell = '';
+        } else if (char === '"') {
+          withinQuotes = !withinQuotes;
+        } else {
+          currentCell += char;
+        }
       }
-    });
+      cells.push(currentCell.trim());
+      return cells;
+    }
+
 
 
 
