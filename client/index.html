@@ -176,7 +176,7 @@ h1{
 }
 
 .csv-container th, .csv-container td {
-    padding: 8px;
+    padding: 6px;
     border: 1px solid #E3E3E3;
     white-space:nowrap;
 }
@@ -386,11 +386,23 @@ h1{
         const cResponse = await codeOutputResponse.json();
         console.log(cResponse[0].output);
         const textResponse = cResponse[cResponse.length-1].output;
-        addMessageToDiv(textResponse, messagesDiv, 'open.png');
+        const formattedTextResponse = extractAnswerAndRows(textResponse);
+        addMessageToDiv(formattedTextResponse[0], messagesDiv, 'open.png');
       } catch (error) {
         console.error(error);
       }
     });
+
+    function extractAnswerAndRows(inputString) {
+      const regex = /ANSWER:\s*(.+),\s*ROWS:\s*(.+)/;
+      const match = regex.exec(inputString);
+      if (match && match.length > 2) {
+        const answer = match[1].trim();
+        const rows = match[2].trim();
+        return [answer, rows];
+      }
+      return null;
+    }
 
   </script>
 </body>

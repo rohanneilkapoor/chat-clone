@@ -101,10 +101,12 @@ const messages = [
                     that a user is asking you questions about about the CSV you were \
                     originally given. The CSV is from an ERP system of a manufacturing company.\
                     If the user is asking questions about the data, you must always output a \
-                    python program that answers the question. This python program should work 100% \
+                    python program that answers the question. The program must always print out both the answer \
+                    and all the rows in the CSV involved in the answer. The print statement must always be formatted \
+                    as "ANSWER: [answer], ROWS: [rows]". This python program should work 100% \
                     of the time. You need to be extremely careful to make sure it always works and \
                     always returns the correct output. The name of the csv file is \
-                    "ORDERS.csv" Here is what the user just said: how many rows and columns are in this csv?. Your response should\
+                    "ORDERS.csv" Here is what the user just said: how many rows are there that contain the number "100". Your response should\
                     only contain the code and no other text. I am going to copy and paste your entire \
                     response into a code editor so in order for it to run, you cannot include any text\
                     other than the code. You also need to be careful not to include any newline \
@@ -114,13 +116,15 @@ const messages = [
         "role": 'assistant',
         "content": 'import csv\n' +
             '\n' +
+            'rows_with_100 = []\n' +
+            '\n' +
             'with open("ORDERS.csv", "r") as csvfile:\n' +
             '    csv_reader = csv.reader(csvfile)\n' +
-            '    row_count = sum(1 for row in csv_reader)\n' +
-            '    csvfile.seek(0)\n' +
-            '    column_count = len(next(csv_reader))\n' +
+            '    for row in csv_reader:\n' +
+            '        if "100" in row:\n' +
+            '            rows_with_100.append(row)\n' +
             '\n' +
-            'print(f"Rows: {row_count}, Columns: {column_count}")'
+            'print(f"ANSWER: {len(rows_with_100)}, ROWS: {rows_with_100}")'
     }
 ]
 storeMessages('INSERT INTO chat_messages (messages) VALUES ($1)');
@@ -134,7 +138,7 @@ async function storeMessages(query){
 
 async function sendPrompt(input) {
     console.log("top of send prompt")
-    const model = 'gpt-3.5-turbo'
+    const model = 'gpt-4'
     const userInput = {
         "role": 'user', 
         "content": 'Remember, you are the best programmer in the world. You write code very carefully, \
@@ -143,10 +147,12 @@ async function sendPrompt(input) {
                     that a user is asking you questions about about the CSV you were \
                     originally given. The CSV is from an ERP system of a manufacturing company.\
                     If the user is asking questions about the data, you must always output a \
-                    python program that answers the question. This python program should work 100% \
+                    python program that answers the question. The program must always print out both the answer \
+                    and all the rows in the CSV involved in the answer. The print statement must always be formatted \
+                    as "ANSWER: [answer], ROWS: [rows]". This python program should work 100% \
                     of the time. You need to be extremely careful to make sure it always works and \
                     always returns the correct output. The name of the csv file is \
-                    "ORDERS.csv" Here is what the user just said: ' + input + '. Your response should\
+                    "ORDERS.csv" Here is what the user just said: ' + input +'. Your response should\
                     only contain the code and no other text. I am going to copy and paste your entire \
                     response into a code editor so in order for it to run, you cannot include any text\
                     other than the code. You also need to be careful not to include any newline \
@@ -213,19 +219,21 @@ async function runPython(pythonCode) {
 }
 
 async function fixError(pythonCode, errorOutput){
-    const model = 'gpt-3.5-turbo'
+    const model = 'gpt-4'
     const userInput = {
         "role": 'user', 
-        "content": 'I have the following python code: ' + pythonCode + "I'm getting the following error: " + errorOutput + " \
+        "content": 'I have the following python code: ' + pythonCode + 'I am getting the following error: ' + errorOutput + ' \
                     Remember, you are the best programmer in the world. You write code very carefully, \
                     considering all edge cases to make sure the code works correctly 100% of \
                     the time. You triple check your code so that there is 0% chance of a syntax error. This python program should work 100% \
                     of the time. You need to be extremely careful to make sure it always works and \
                     always returns the correct output. Your response should\
-                    only contain the code and no other text. I am going to copy and paste your entire \
+                    only contain the code and no other text. The program must always print out both the answer \
+                    and all the rows in the CSV involved in the answer. The print statement must always be formatted \
+                    as "ANSWER: [answer], ROWS: [rows]". I am going to copy and paste your entire \
                     response into a code editor so in order for it to run, you cannot include any text\
                     other than the code. You also need to be careful not to include any newline \
-                    characters since that will also result in a syntax error. Also do not write ```python."
+                    characters since that will also result in a syntax error. Also do not write ```python.'
     }
     messages.push(userInput)
 
