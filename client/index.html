@@ -34,6 +34,10 @@
       user-select: text; /* standard syntax */
   }
 
+  td {
+    vertical-align: top;
+  }
+
   #client-form {
     position: fixed;
     bottom: 0;
@@ -76,7 +80,6 @@
 }
 
 h1{
-  padding-top: 28px;
   padding-bottom: 28px;
 }
 
@@ -157,7 +160,7 @@ h1{
 .csv-container {
   position: fixed;
   left: 0;
-  right: 660px; /* adjust as needed */
+  right: 664px; /* adjust as needed */
   top: 0;
   bottom: 0;
   padding: 0px;
@@ -173,8 +176,9 @@ h1{
 }
 
 .csv-container th, .csv-container td {
-  padding: 8px;
-  border: 1px solid #E3E3E3;
+    padding: 8px;
+    border: 1px solid #E3E3E3;
+    white-space:nowrap;
 }
 
 
@@ -291,6 +295,15 @@ h1{
           }
           table.appendChild(row);
         }
+        //let table = document.querySelector('.csv-container');
+        let columns = table.querySelectorAll('th, td');
+
+        columns.forEach(column => {
+          if (column.offsetWidth > 1200) {
+            column.style.maxWidth = '1200px';
+            column.style.whiteSpace = 'normal';
+          }
+        });
       };
     }
 
