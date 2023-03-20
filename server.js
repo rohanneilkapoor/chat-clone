@@ -65,12 +65,12 @@ app.post('/upload_csv', upload.single('csv'), async (req, res) => {
         }
         messages[0].content = 'You are the best programmer in the world. You write code very carefully, \
                         considering all edge cases to make sure the code works correctly 100% of \
-                        the time. You triple check your code and you do not hesitate to write long \
-                        code if it means your code is more likely to work correctly. You are getting a CSV from an ERP \
+                        the time. You triple check your code so that there is 0% chance of a syntax error. You are getting a CSV from an ERP \
                         system of a manufacturing company. The name of the CSV is "ORDERS.csv" A \
                         user will ask you questions about it. Most of their questions will be about \
                         the data itself. When the user asks questions about the data, you must \
                         always output a python program that answers that question. Here is the CSV:' + data;
+        console.log("MESSAGES ARE: ", messages);
     });
 
     try {
@@ -80,7 +80,6 @@ app.post('/upload_csv', upload.single('csv'), async (req, res) => {
         client.release();
 
         res.status(200).send({ message: 'CSV file uploaded and stored in the database.' });
-        console.log("stored it in the db");
     } catch (error) {
         console.error(error);
         res.status(500).send({ message: 'Failed to store CSV file in the database.' });
@@ -93,6 +92,35 @@ const messages = [
     {
         "role": 'system', 
         "content": ''
+    },
+    {
+        "role": 'user',
+        "content": 'Remember, you are the best programmer in the world. You write code very carefully, \
+                    considering all edge cases to make sure the code works correctly 100% of \
+                    the time. You triple check your code so that there is 0% chance of a syntax error. Remember\
+                    that a user is asking you questions about about the CSV you were \
+                    originally given. The CSV is from an ERP system of a manufacturing company.\
+                    If the user is asking questions about the data, you must always output a \
+                    python program that answers the question. This python program should work 100% \
+                    of the time. You need to be extremely careful to make sure it always works and \
+                    always returns the correct output. The name of the csv file is \
+                    "ORDERS.csv" Here is what the user just said: how many rows and columns are in this csv?. Your response should\
+                    only contain the code and no other text. I am going to copy and paste your entire \
+                    response into a code editor so in order for it to run, you cannot include any text\
+                    other than the code. You also need to be careful not to include any newline \
+                    characters since that will also result in a syntax error. Also do not write ```python.'
+    },
+    {
+        "role": 'assistant',
+        "content": 'import csv\n' +
+            '\n' +
+            'with open("ORDERS.csv", "r") as csvfile:\n' +
+            '    csv_reader = csv.reader(csvfile)\n' +
+            '    row_count = sum(1 for row in csv_reader)\n' +
+            '    csvfile.seek(0)\n' +
+            '    column_count = len(next(csv_reader))\n' +
+            '\n' +
+            'print(f"Rows: {row_count}, Columns: {column_count}")'
     }
 ]
 storeMessages('INSERT INTO chat_messages (messages) VALUES ($1)');
@@ -105,13 +133,13 @@ async function storeMessages(query){
 }
 
 async function sendPrompt(input) {
-    const model = 'gpt-3.5-turbo'
+    console.log("top of send prompt")
+    const model = 'gpt-4'
     const userInput = {
         "role": 'user', 
         "content": 'Remember, you are the best programmer in the world. You write code very carefully, \
                     considering all edge cases to make sure the code works correctly 100% of \
-                    the time. You triple check your code and you do not hesitate to write long \
-                    code if it means your code is more likely to work correctly. Remember\
+                    the time. You triple check your code so that there is 0% chance of a syntax error. Remember\
                     that a user is asking you questions about about the CSV you were \
                     originally given. The CSV is from an ERP system of a manufacturing company.\
                     If the user is asking questions about the data, you must always output a \
@@ -122,15 +150,16 @@ async function sendPrompt(input) {
                     only contain the code and no other text. I am going to copy and paste your entire \
                     response into a code editor so in order for it to run, you cannot include any text\
                     other than the code. You also need to be careful not to include any newline \
-                    characters since that will also result in a syntax error. Also do not write ```python'
+                    characters since that will also result in a syntax error. Also do not write ```python.'
     }
     messages.push(userInput)
-
+    console.log("right before chat completion")
     const completion = await openai.createChatCompletion({
         model: model,
         messages: messages,
         temperature: 0
     })
+    console.log("right after chat completion")
     const APIResponse = completion.data.choices[0].message
     const APIResponseText = APIResponse.content
     console.log("API RESPONSE TEXT IS: ", APIResponseText)
@@ -169,15 +198,17 @@ async function runPython(pythonCode) {
     if (exitCode !== 0) {
         console.error(`Python process exited with code ${exitCode}`);
         console.error('Error output:', errorOutput);
-        fixError(pythonCode, errorOutput)
+        await fixError(pythonCode, errorOutput)
     }
     const formattedOutput = output.trim()
     console.log("CODE OUTPUT IS: ", formattedOutput)
-    const client = await pool.connect()
-    const query = 'INSERT INTO code_output (output) VALUES ($1)';
-    await client.query(query, [formattedOutput])
-    client.release()
-    return output.trim();
+    if(formattedOutput !== ''){
+        const client = await pool.connect()
+        const query = 'INSERT INTO code_output (output) VALUES ($1)';
+        await client.query(query, [formattedOutput])
+        client.release()
+        return output.trim();
+    }
 }
 
 async function fixError(pythonCode, errorOutput){
@@ -187,14 +218,13 @@ async function fixError(pythonCode, errorOutput){
         "content": 'I have the following python code: ' + pythonCode + "I'm getting the following error: " + errorOutput + " \
                     Remember, you are the best programmer in the world. You write code very carefully, \
                     considering all edge cases to make sure the code works correctly 100% of \
-                    the time. You triple check your code and you do not hesitate to write long \
-                    code if it means your code is more likely to work correctly. This python program should work 100% \
+                    the time. You triple check your code so that there is 0% chance of a syntax error. This python program should work 100% \
                     of the time. You need to be extremely careful to make sure it always works and \
                     always returns the correct output. Your response should\
                     only contain the code and no other text. I am going to copy and paste your entire \
                     response into a code editor so in order for it to run, you cannot include any text\
                     other than the code. You also need to be careful not to include any newline \
-                    characters since that will also result in a syntax error. Also do not write ```python"
+                    characters since that will also result in a syntax error. Also do not write ```python."
     }
     messages.push(userInput)
 

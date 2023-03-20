@@ -29,6 +29,10 @@
       font-size: 18px;
       line-height: 28px;
       background-color: #FAFAFA;
+      -webkit-user-select: text; /* for Chrome and Safari */
+      -moz-user-select: text; /* for Firefox */
+      -ms-user-select: text; /* for Internet Explorer and Edge */
+      user-select: text; /* standard syntax */
   }
 
   #client-form {
@@ -55,7 +59,7 @@
     outline: none;
   }
   .message {
-  padding-bottom: 32px;
+  padding-bottom: 40px;
   display: flex;
   align-items: center; /* align items to center by default */
 }
@@ -181,19 +185,19 @@ h1{
     });
 
     function displayUploadedFile(fileName) {
-    const messagesDiv = document.querySelector('#messages');
-    const uploadedFileMessage = `
-      <div class="message">
-        <img src="dad.jpg" class="profile-picture">
-        <div><span class="uploaded-text">Uploaded</span> <span class="file-name-pill">${fileName}</span></div>
-      </div>
-      <div class="message">
-        <img src="open.png" class="profile-picture">
-        <div>Hi there. Ask me questions about <span class="file-name-pill">${fileName}</span></div>
-      </div>
-    `;
-    messagesDiv.innerHTML = uploadedFileMessage;
-  }
+      const messagesDiv = document.querySelector('#messages');
+      const uploadedFileMessage = `
+        <div class="message">
+          <img src="dad.jpg" class="profile-picture">
+          <div><span class="uploaded-text">Uploaded</span> <span class="file-name-pill">${fileName}</span></div>
+        </div>
+        <div class="message">
+          <img src="open.png" class="profile-picture">
+          <div>Hi there. Ask me questions about <span class="file-name-pill">${fileName}</span></div>
+        </div>
+      `;
+      messagesDiv.innerHTML = uploadedFileMessage;
+    }
 
     csvUpload.addEventListener('change', (event) => {
       if (event.target.files && event.target.files.length > 0) {
