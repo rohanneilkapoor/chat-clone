@@ -159,6 +159,7 @@ async function sendPrompt(input) {
         messages: messages,
         temperature: 0
     })
+    console.log("API CREATE CHAT COMPLETION: ",completion);
     console.log("right after chat completion")
     const APIResponse = completion.data.choices[0].message
     const APIResponseText = APIResponse.content
