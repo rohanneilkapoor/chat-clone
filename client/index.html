@@ -41,6 +41,9 @@
   #client-form {
     position: fixed;
     bottom: 0;
+    padding-right: 16px;
+    padding-left: 16px;
+    padding-bottom: 32px;
     padding-bottom: 32px;
     width: 100%;
     max-width: 600px; /* adjust as needed */
@@ -60,7 +63,8 @@
     outline: none;
   }
   .message {
-  padding-bottom: 40px;
+  padding: 20px;
+  border-radius: 12px;
   display: flex;
   align-items: center; /* align items to center by default */
 }
@@ -80,7 +84,7 @@
 }
 
 h1{
-  padding-bottom: 28px;
+  padding: 20px;
 }
 
 .csv-upload-label {
@@ -145,8 +149,8 @@ h1{
 .chat-container {
   width: 600px;
   flex-grow: 1;
-  max-height: calc(100vh - 32px - 16px - 1px); /* 32px for padding, 16px for #client-form padding, 1px for border-top */
-  padding: 32px;
+  max-height: calc(100vh - 16px - 16px - 1px); /* 16px for padding, 16px for #client-form padding, 1px for border-top */
+  padding: 16px;
   position: fixed;
   top: 0;
   right: 0;
@@ -160,7 +164,7 @@ h1{
 .csv-container {
   position: fixed;
   left: 0;
-  right: 664px; /* adjust as needed */
+  right: 632px; /* adjust as needed */
   top: 0;
   bottom: 0;
   padding: 0px;
@@ -181,7 +185,11 @@ h1{
     white-space:nowrap;
 }
 .highlighted-row {
-  background-color: #fff2e5;
+  background-color: #DDF5EA;
+}
+
+.non-highlighted-row {
+  background-color: none;
 }
 
 
@@ -291,6 +299,12 @@ h1{
         for (let i = 0; i < rows.length; i++) {
           const cells = parseCSVRow(rows[i]);
           const row = document.createElement('tr');
+
+          // Add a new cell at the beginning of each row containing the row number
+          const rowIndexCell = document.createElement('td');
+          rowIndexCell.textContent = i + 1;
+          row.appendChild(rowIndexCell);
+
           for (let j = 0; j < cells.length; j++) {
             const cell = document.createElement('td');
             cell.textContent = cells[j];
@@ -336,12 +350,14 @@ h1{
 
 
 
+
     const form = document.querySelector('#client-form');
     const messagesDiv = document.querySelector('#messages');
 
     function addMessageToDiv(prompt, messagesDiv, image) {
       const message = document.createElement('div');
       message.classList.add('message');
+      message.classList.add('non-highlighted-row');
       const profilePicture = document.createElement('img');
       profilePicture.src = image; // set profile picture URL
       profilePicture.classList.add('profile-picture'); // add class to profile picture element
@@ -353,6 +369,8 @@ h1{
         //replace last child element with prompt
         const lastChildText = messagesDiv.lastElementChild.lastElementChild;
         lastChildText.textContent = prompt;
+        messagesDiv.lastElementChild.classList.remove('non-highlighted-row');
+        messagesDiv.lastElementChild.classList.add('highlighted-row');
 
       } else{
         message.appendChild(profilePicture); // add profile picture element first
@@ -364,6 +382,8 @@ h1{
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault(); // Prevent the default form submission behavior
+      removeTableHighlights();
+      removeChatHighlights();
 
       const promptInput = document.querySelector('#prompt');
       const prompt = promptInput.value;
@@ -389,7 +409,8 @@ h1{
         const cResponse = await codeOutputResponse.json();
         console.log(cResponse[0].output);
         const textResponse = cResponse[cResponse.length-1].output;
-        const formattedTextResponse = extractAnswerAndRows(textResponse);
+        const formattedTextResponseArray = extractAnswerAndRows(textResponse);
+        const formattedTextResponse = formatTextResponseArray(formattedTextResponseArray);
         addMessageToDiv(formattedTextResponse[0], messagesDiv, 'open.png');
         const resultArray = JSON.parse(formattedTextResponse[1]);
         highlightRelevantRows(resultArray);
@@ -398,25 +419,70 @@ h1{
       }
     });
 
+    function formatTextResponseArray(inputArray) {
+      let answers = [];
+      let rowIndices = [];
+
+      inputArray.forEach(pair => {
+        answers.push(pair[0]);
+        let rowIndexArray = JSON.parse(pair[1]);
+        rowIndices.push(...rowIndexArray);
+      });
+
+      let combinedAnswers = answers.join(', ');
+      let combinedRowIndices = JSON.stringify(rowIndices);
+
+      return [combinedAnswers, combinedRowIndices];
+    }
+
     function extractAnswerAndRows(inputString) {
-      const regex = /ANSWER:\s*(.+),\s*ROW INDICES:\s*(.+)/;
-      const match = regex.exec(inputString);
-      if (match && match.length > 2) {
-        const answer = match[1].trim();
-        const rows = match[2].trim();
-        return [answer, rows];
+      console.log("INPUT IS: ", inputString);
+      const regex = /ANSWER:\s*(.+?),\s*ROW INDICES:\s*(.+?)(?=\nANSWER:|$)/g;
+      const results = [];
+      let match;
+
+      while ((match = regex.exec(inputString)) !== null) {
+        if (match.length > 2) {
+          const answer = match[1].trim();
+          const rows = match[2].trim();
+          results.push([answer, rows]);
+        }
       }
-      return null;
+      console.log("RESULTING ARRAY: ", results)
+      return results.length > 0 ? results : null;
     }
 
     function highlightRelevantRows(rowIndices) {
       const table = document.querySelector('#csv-table');
       const rows = table.querySelectorAll('tr');
 
-      rowIndices.forEach(index => {
-        if (index < rows.length) {
-          rows[index].classList.add('highlighted-row');
+      rows.forEach((row, index) => {
+        if (rowIndices.includes(index)) {
+          row.classList.add('highlighted-row');
+          row.classList.remove('non-highlighted-row');
+        } else {
+          row.classList.add('non-highlighted-row');
+          row.classList.remove('highlighted-row');
         }
+      });
+    }
+
+    function removeTableHighlights(){
+      const table = document.querySelector('#csv-table');
+      const rows = table.querySelectorAll('tr');
+
+      rows.forEach((row) => {
+        row.classList.add('non-highlighted-row');
+        row.classList.remove('highlighted-row');
+      });
+    }
+
+    function removeChatHighlights(){
+      const messages = document.querySelector('#messages');
+      const divs = messages.querySelectorAll('div');
+      divs.forEach((div) => {
+        div.classList.add('non-highlighted-row');
+        div.classList.remove('highlighted-row');
       });
     }
 

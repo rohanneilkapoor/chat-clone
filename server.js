@@ -64,12 +64,12 @@ app.post('/upload_csv', upload.single('csv'), async (req, res) => {
             return;
         }
         messages[0].content = 'You are the best programmer in the world. You write code very carefully, \
-                        considering all edge cases to make sure the code works correctly 100% of \
-                        the time. You triple check your code so that there is 0% chance of a syntax error. You are getting a CSV from an ERP \
-                        system of a manufacturing company. The name of the CSV is "ORDERS.csv" A \
-                        user will ask you questions about it. Most of their questions will be about \
-                        the data itself. When the user asks questions about the data, you must \
-                        always output a python program that answers that question. Here is the CSV:' + data;
+                                considering all edge cases to make sure the code works correctly 100% of \
+                                the time. You triple check your code so that there is 0% chance of a syntax error. You are getting a CSV from an ERP \
+                                system of a manufacturing company. The name of the CSV is "ORDERS.csv" A \
+                                user will ask you questions about it. Most of their questions will be about \
+                                the data itself. When the user asks questions about the data, you must \
+                                always output a python program that answers that question. Here is the CSV:' + data;
         console.log("MESSAGES ARE: ", messages);
     });
 
@@ -107,7 +107,7 @@ const messages = [
                     "ORDERS.csv" Here is what the user just said: how many rows are there that contain the number "100". Your response should\
                     only contain the code and no other text. The program must always print out both the answer \
                     and all the row indices in the CSV that are involved in the answer. The print statement must always be formatted \
-                    as "ANSWER: [answer], ROW INDICES: [row indices]". I am going to copy and paste your entire \
+                    as "ANSWER: [answer], ROW INDICES: [show only a list of row indices here and no other text]". You must be careful to only show a list of numbers after "ROW INDICES: ". I am going to copy and paste your entire \
                     response into a code editor so in order for it to run, you cannot include any text\
                     other than the code. You also need to be careful not to include any newline \
                     characters since that will also result in a syntax error. Also do not write ```python.'
@@ -126,6 +126,7 @@ const messages = [
             '            rows_with_100.append(row)\n' +
             '            row_indices.append(index)\n' +
             '\n' +
+            '#Format the print statement as "ANSWER: [answer], ROW INDICES: [show only a list of row indices here and no other text]. You must be careful to only show a list of numbers after "ROW INDICES: "\n' +
             'print(f"ANSWER: {len(rows_with_100)}, ROW INDICES: {row_indices}")'
     }
 ]
@@ -155,7 +156,7 @@ async function sendPrompt(input) {
                     "ORDERS.csv" Here is what the user just said: ' + input +'. Your response should\
                     only contain the code and no other text. The program must always print out both the answer \
                     and all the row indices in the CSV that are involved in the answer. The print statement must always be formatted \
-                    as "ANSWER: [answer], ROW INDICES: [row indices]". I am going to copy and paste your entire \
+                    as "ANSWER: [answer], ROW INDICES: [show only a list of row indices here and no other text]". You must be careful to only show a list of numbers after "ROW INDICES: ". I am going to copy and paste your entire \
                     response into a code editor so in order for it to run, you cannot include any text\
                     other than the code. You also need to be careful not to include any newline \
                     characters since that will also result in a syntax error. Also do not write ```python.'
@@ -232,7 +233,7 @@ async function fixError(pythonCode, errorOutput){
                     always returns the correct output. Your response should\
                     only contain the code and no other text. The program must always print out both the answer \
                     and all the row indices in the CSV that are involved in the answer. The print statement must always be formatted \
-                    as "ANSWER: [answer], ROW INDICES: [row indices]". I am going to copy and paste your entire \
+                    as "ANSWER: [answer], ROW INDICES: [show only a list of row indices here and no other text]". You must be careful to only show a list of numbers after "ROW INDICES: ". I am going to copy and paste your entire \
                     response into a code editor so in order for it to run, you cannot include any text\
                     other than the code. You also need to be careful not to include any newline \
                     characters since that will also result in a syntax error. Also do not write ```python.'
