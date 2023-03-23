@@ -372,8 +372,10 @@ h1{
         //replace last child element with prompt
         const lastChildText = messagesDiv.lastElementChild.lastElementChild;
         lastChildText.textContent = prompt;
-        messagesDiv.lastElementChild.classList.remove('non-highlighted-row');
-        messagesDiv.lastElementChild.classList.add('highlighted-row');
+        if(!prompt.includes("I'm sorry, but I cannot understand your question.")){
+          messagesDiv.lastElementChild.classList.remove('non-highlighted-row');
+          messagesDiv.lastElementChild.classList.add('highlighted-row');
+        }
 
       } else{
         message.appendChild(profilePicture); // add profile picture element first
@@ -422,11 +424,17 @@ h1{
         const cResponse = await codeOutputResponse.json();
         console.log("ALL CODE OUTPUTS: ", cResponse);
         const textResponse = cResponse[cResponse.length-1].output;
-        const formattedTextResponseArray = extractAnswerAndRows(textResponse);
-        const formattedTextResponse = formatTextResponseArray(formattedTextResponseArray);
-        addMessageToDiv(formattedTextResponse[0], messagesDiv, 'open.png');
-        const resultArray = JSON.parse(formattedTextResponse[1]);
-        highlightRelevantRows(resultArray);
+        if (textResponse.includes("ANSWER:") && textResponse.includes("ROW INDICES:")) {
+          const formattedTextResponseArray = extractAnswerAndRows(textResponse);
+          const formattedTextResponse = formatTextResponseArray(formattedTextResponseArray);
+          addMessageToDiv(formattedTextResponse[0], messagesDiv, 'open.png');
+          const resultArray = JSON.parse(formattedTextResponse[1]);
+          highlightRelevantRows(resultArray);
+        } 
+        else{
+          addMessageToDiv("I'm sorry, but I cannot understand your question. Please provide a clear question related to the CSV data, and I will answer it.", messagesDiv, 'open.png');
+        }
+        
       } catch (error) {
         console.error(error);
       }

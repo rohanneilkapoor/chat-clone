@@ -177,7 +177,21 @@ async function sendPrompt(input) {
     console.log("API RESPONSE TEXT IS: ", APIResponseText)
     //completion.data.choices[0].message.content = await runPython(APIResponseText)
     messages.push(APIResponse)
-    let run = await runPython(APIResponseText)
+    if(APIResponseText.includes("import csv")){
+        let run = await runPython(APIResponseText)
+    } else{
+        const client = await pool.connect()
+        
+        // Truncate the table to remove all existing records
+        const truncateQuery = 'TRUNCATE TABLE code_output';
+        await client.query(truncateQuery);
+
+        // Insert the new content
+        const insertQuery = 'INSERT INTO code_output (output) VALUES ($1)';
+        await client.query(insertQuery, [APIResponseText])
+
+        client.release()
+    }
     storeMessages('UPDATE chat_messages SET messages = $1 WHERE id = (SELECT id FROM chat_messages ORDER BY id ASC LIMIT 1)');
 
     
