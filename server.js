@@ -140,7 +140,6 @@ async function storeMessages(query){
 }
 
 async function sendPrompt(input) {
-    console.log("top of send prompt")
     const model = 'gpt-4'
     const userInput = {
         "role": 'user', 
@@ -161,15 +160,18 @@ async function sendPrompt(input) {
                     other than the code. You also need to be careful not to include any newline \
                     characters since that will also result in a syntax error. Also do not write ```python.'
     }
+    if(messages.length >= 7){
+        messages.splice(1, 2);
+    }
     messages.push(userInput)
+    console.log("MESSAGES BEFORE API CALL IS: ", messages);
     console.log("right before chat completion")
     const completion = await openai.createChatCompletion({
         model: model,
         messages: messages,
         temperature: 0
     })
-    console.log("API CREATE CHAT COMPLETION: ",completion);
-    console.log("right after chat completion")
+    console.log("MESSAGES AFTER API CALL IS: ", messages);
     const APIResponse = completion.data.choices[0].message
     const APIResponseText = APIResponse.content
     console.log("API RESPONSE TEXT IS: ", APIResponseText)
@@ -212,10 +214,17 @@ async function runPython(pythonCode) {
     }
     const formattedOutput = output.trim()
     console.log("CODE OUTPUT IS: ", formattedOutput)
-    if(formattedOutput !== ''){
+    if (formattedOutput !== '') {
         const client = await pool.connect()
-        const query = 'INSERT INTO code_output (output) VALUES ($1)';
-        await client.query(query, [formattedOutput])
+        
+        // Truncate the table to remove all existing records
+        const truncateQuery = 'TRUNCATE TABLE code_output';
+        await client.query(truncateQuery);
+
+        // Insert the new content
+        const insertQuery = 'INSERT INTO code_output (output) VALUES ($1)';
+        await client.query(insertQuery, [formattedOutput])
+
         client.release()
         return output.trim();
     }

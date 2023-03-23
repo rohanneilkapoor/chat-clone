@@ -407,7 +407,7 @@ h1{
         console.log(result);
         const codeOutputResponse = await fetch('http://localhost:8080/code_output');
         const cResponse = await codeOutputResponse.json();
-        console.log(cResponse[0].output);
+        console.log("ALL CODE OUTPUTS: ", cResponse);
         const textResponse = cResponse[cResponse.length-1].output;
         const formattedTextResponseArray = extractAnswerAndRows(textResponse);
         const formattedTextResponse = formatTextResponseArray(formattedTextResponseArray);
@@ -436,7 +436,6 @@ h1{
     }
 
     function extractAnswerAndRows(inputString) {
-      console.log("INPUT IS: ", inputString);
       const regex = /ANSWER:\s*(.+?),\s*ROW INDICES:\s*(.+?)(?=\nANSWER:|$)/g;
       const results = [];
       let match;
@@ -448,7 +447,6 @@ h1{
           results.push([answer, rows]);
         }
       }
-      console.log("RESULTING ARRAY: ", results)
       return results.length > 0 ? results : null;
     }
 
