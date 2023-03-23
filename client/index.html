@@ -25,8 +25,8 @@
   body {
       font-family: 'Satoshi-Regular', sans-serif;
       margin: 0 auto;
-      font-size: 18px;
-      line-height: 28px;
+      font-size: 17px;
+      line-height: 26px;
       background-color: #FAFAFA;
       -webkit-user-select: text; /* for Chrome and Safari */
       -moz-user-select: text; /* for Firefox */
@@ -63,7 +63,10 @@
     outline: none;
   }
   .message {
-  padding: 20px;
+  padding-right: 20px;
+  padding-left: 20px;
+  padding-top: 16px;
+  padding-bottom: 16px;
   border-radius: 12px;
   display: flex;
   align-items: center; /* align items to center by default */
@@ -272,7 +275,7 @@ h1{
         </div>
         <div class="message">
           <img src="open.png" class="profile-picture">
-          <div>Hi there. Ask me questions about <span class="file-name-pill">${fileName}</span></div>
+          <div>Hi there. Ask me questions about your CSV.</div>
         </div>
       `;
       messagesDiv.innerHTML = uploadedFileMessage;
@@ -379,6 +382,16 @@ h1{
         messagesDiv.appendChild(message);
       }
     }
+
+    window.addEventListener('beforeunload', async (event) => {
+        // Cancel the event
+        event.preventDefault();
+
+        // Make an asynchronous request to the server to clear the data
+        await fetch('http://localhost:8080/clear_data', {
+            method: 'GET'
+        });
+    });
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault(); // Prevent the default form submission behavior

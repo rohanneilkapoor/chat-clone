@@ -317,4 +317,26 @@ app.get('/', (req, res)=>{
     res.send("Welcome to your server")
 })
 
+app.get('/clear_data', async (req, res) => {
+    try {
+        const client = await pool.connect();
+
+        // Clear the chat_messages table
+        await client.query('DELETE FROM chat_messages');
+        
+        // Clear the csvs table
+        await client.query('DELETE FROM csvs');
+        
+        // Clear the code_output table
+        await client.query('DELETE FROM code_output');
+        console.log("DELETED DBS");
+        
+        client.release();
+        res.status(200).send({ message: 'All data cleared from database tables.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: 'Failed to clear data from database tables.' });
+    }
+});
+
 app.listen(port, () => console.log(`Server has started on port: ${port}`))
