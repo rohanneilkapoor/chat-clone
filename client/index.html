@@ -25,6 +25,7 @@
   body {
       font-family: 'Satoshi-Regular', sans-serif;
       margin: 0 auto;
+      color: #232323;
       font-size: 17px;
       line-height: 26px;
       background-color: #FAFAFA;
@@ -436,7 +437,7 @@ h1{
         if (messagesDiv.lastElementChild.querySelector('div').textContent === 'Loading...') {
           messagesDiv.lastElementChild.querySelector('div').textContent = 'Loading for a bit longer...';
         }
-      }, 8000);
+      }, 9000);
       promptInput.value = '';
 
       const data = { prompt };
@@ -451,22 +452,27 @@ h1{
         });
 
         clearTimeout(loadingTimeout); // Clear the timeout
-
-        const result = await response.json();
-        console.log(result);
-        const codeOutputResponse = await fetch('http://localhost:8080/code_output');
-        const cResponse = await codeOutputResponse.json();
-        console.log("ALL CODE OUTPUTS: ", cResponse);
-        const textResponse = cResponse[cResponse.length-1].output;
-        if (textResponse.includes("ANSWER:") && textResponse.includes("ROW INDICES:")) {
-          const formattedTextResponseArray = extractAnswerAndRows(textResponse);
-          const formattedTextResponse = formatTextResponseArray(formattedTextResponseArray);
-          addMessageToDiv(formattedTextResponse[0], messagesDiv, 'open.png');
-          const resultArray = JSON.parse(formattedTextResponse[1]);
-          highlightRelevantRows(resultArray);
-        } 
+        if (response.ok) {
+          const result = await response.json();
+          console.log(result);
+          const codeOutputResponse = await fetch('http://localhost:8080/code_output');
+          const cResponse = await codeOutputResponse.json();
+          console.log("ALL CODE OUTPUTS: ", cResponse);
+          const textResponse = cResponse[cResponse.length-1].output;
+          if (textResponse.includes("ANSWER:") && textResponse.includes("ROW INDICES:")) {
+            const formattedTextResponseArray = extractAnswerAndRows(textResponse);
+            const formattedTextResponse = formatTextResponseArray(formattedTextResponseArray);
+            addMessageToDiv(formattedTextResponse[0], messagesDiv, 'open.png');
+            const resultArray = JSON.parse(formattedTextResponse[1]);
+            highlightRelevantRows(resultArray);
+          } 
+          else{
+            addMessageToDiv("I'm sorry, but I cannot understand your question. Please provide a clear question related to the CSV data, and I will answer it.", messagesDiv, 'open.png');
+          }
+        }
         else{
-          addMessageToDiv("I'm sorry, but I cannot understand your question. Please provide a clear question related to the CSV data, and I will answer it.", messagesDiv, 'open.png');
+          clearTimeout(loadingTimeout); // Clear the timeout
+          addMessageToDiv("There was an error. You can try asking your question again or refreshing the page.", messagesDiv, 'open.png');
         }
         
       } catch (error) {
