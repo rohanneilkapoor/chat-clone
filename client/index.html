@@ -191,6 +191,10 @@ h1{
   background-color: #DDF5EA;
 }
 
+.error {
+  background-color: #FFE3DD;
+}
+
 .non-highlighted-row {
   background-color: none;
 }
@@ -372,9 +376,11 @@ h1{
         //replace last child element with prompt
         const lastChildText = messagesDiv.lastElementChild.lastElementChild;
         lastChildText.textContent = prompt;
-        if(!prompt.includes("I'm sorry, but I cannot understand your question.")){
+        if(!prompt.includes("I'm sorry, but I cannot understand your question.") && !prompt.includes("There was an error.")){
           messagesDiv.lastElementChild.classList.remove('non-highlighted-row');
           messagesDiv.lastElementChild.classList.add('highlighted-row');
+        } else if(prompt.includes("There was an error.")){
+          messagesDiv.lastElementChild.classList.add('error');
         }
 
       } else{
@@ -437,6 +443,7 @@ h1{
         
       } catch (error) {
         console.error(error);
+        addMessageToDiv("There was an error. You can try asking your question again or refreshing the page.", messagesDiv, 'open.png');
       }
     });
 
