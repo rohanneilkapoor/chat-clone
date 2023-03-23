@@ -34,6 +34,19 @@
       user-select: text; /* standard syntax */
   }
 
+  @keyframes flash {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.2;
+    }
+  }
+
+  .flash {
+    animation: flash 2s linear infinite;
+  }
+
   td {
     vertical-align: top;
   }
@@ -371,22 +384,29 @@ h1{
 
       const text = document.createElement('div');
       text.innerHTML = prompt;
-      
-      if(prompt != "Loading..." && image == "open.png"){
-        //replace last child element with prompt
-        const lastChildText = messagesDiv.lastElementChild.lastElementChild;
-        lastChildText.textContent = prompt;
-        if(!prompt.includes("I'm sorry, but I cannot understand your question.") && !prompt.includes("There was an error.")){
-          messagesDiv.lastElementChild.classList.remove('non-highlighted-row');
-          messagesDiv.lastElementChild.classList.add('highlighted-row');
-        } else if(prompt.includes("There was an error.")){
-          messagesDiv.lastElementChild.classList.add('error');
-        }
 
-      } else{
-        message.appendChild(profilePicture); // add profile picture element first
-        message.appendChild(text);
-        
+      if (prompt === "Loading...") {
+        text.classList.add('flash');
+      }
+
+      message.appendChild(profilePicture); // add profile picture element first
+      message.appendChild(text);
+
+      if (prompt !== "Loading..." && prompt !== "Loading for a bit longer..." && image === "open.png") {
+        // Replace the last child element (the "Loading..." div) with the new message
+        messagesDiv.lastElementChild.remove();
+        messagesDiv.appendChild(message);
+
+        if (
+          !prompt.includes("I'm sorry, but I cannot understand your question.") &&
+          !prompt.includes("There was an error.")
+        ) {
+          message.classList.remove('non-highlighted-row');
+          message.classList.add('highlighted-row');
+        } else if (prompt.includes("There was an error.")) {
+          message.classList.add('error');
+        }
+      } else {
         messagesDiv.appendChild(message);
       }
     }
@@ -403,6 +423,7 @@ h1{
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault(); // Prevent the default form submission behavior
+      let loadingTimeout;
       removeTableHighlights();
       removeChatHighlights();
 
@@ -411,7 +432,12 @@ h1{
 
       addMessageToDiv(prompt, messagesDiv, 'dad.jpg');
       addMessageToDiv("Loading...", messagesDiv, 'open.png');
-      promptInput.value = ''; 
+      loadingTimeout = setTimeout(() => {
+        if (messagesDiv.lastElementChild.querySelector('div').textContent === 'Loading...') {
+          messagesDiv.lastElementChild.querySelector('div').textContent = 'Loading for a bit longer...';
+        }
+      }, 8000);
+      promptInput.value = '';
 
       const data = { prompt };
 
@@ -423,6 +449,8 @@ h1{
           },
           body: JSON.stringify(data)
         });
+
+        clearTimeout(loadingTimeout); // Clear the timeout
 
         const result = await response.json();
         console.log(result);
@@ -442,6 +470,7 @@ h1{
         }
         
       } catch (error) {
+        clearTimeout(loadingTimeout); // Clear the timeout
         console.error(error);
         addMessageToDiv("There was an error. You can try asking your question again or refreshing the page.", messagesDiv, 'open.png');
       }
