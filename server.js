@@ -1,12 +1,12 @@
 import { Configuration, OpenAIApi } from 'openai'
 import { createRequire } from 'module'
-const DATABASE_URL = process.env.DATABASE_URL;
+const DATABASE_URL = process.env.DATABASE_URL || "postgres://rohankapoor:password@localhost:5432/chat_db";
 const require = createRequire(import.meta.url)
 const fs = require('fs');
 const express = require('express')
 const cors = require('cors')
 const app = express()
-const port = 8080
+const port = process.env.PORT || 8080
 const { promisify } = require('util')
 const parseString = promisify(require('xml2js').parseString)
 const { spawn } = require('child_process');
@@ -22,15 +22,10 @@ app.use(require('cors')())
 const { Pool } = require('pg');
 
 const pool = new Pool({
-  user: 'rohankapoor',
-  host: 'localhost',
-  database: 'chat_db',
-  password: 'password',
-  port: 5432,
   connectionString: DATABASE_URL,
-  ssl: {
+  ssl: process.env.DATABASE_URL ? {
     rejectUnauthorized: false
-  }
+  } : false
 });
 
 require('dotenv').config()
