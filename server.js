@@ -1,5 +1,6 @@
 import { Configuration, OpenAIApi } from 'openai'
 import { createRequire } from 'module'
+const DATABASE_URL = process.env.DATABASE_URL;
 const require = createRequire(import.meta.url)
 const fs = require('fs');
 const express = require('express')
@@ -26,6 +27,10 @@ const pool = new Pool({
   database: 'chat_db',
   password: 'password',
   port: 5432,
+  connectionString: DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 require('dotenv').config()
