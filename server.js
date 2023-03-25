@@ -68,13 +68,19 @@ app.post('/upload_csv', upload.single('csv'), async (req, res) => {
             console.error(err);
             return;
         }
+        // Split the content by lines
+        let lines = data.split('\n');
+    
+        // Extract the first 30 rows, including the header row
+        let first30Rows = lines.slice(0, 30).join('\n');
+    
         messages[0].content = 'You are the best programmer in the world. You write code very carefully, \
                                 considering all edge cases to make sure the code works correctly 100% of \
                                 the time. You triple check your code so that there is 0% chance of a syntax error. You are getting a CSV from an ERP \
                                 system of a manufacturing company. The name of the CSV is "ORDERS.csv" A \
                                 user will ask you questions about it. Most of their questions will be about \
                                 the data itself. When the user asks questions about the data, you must \
-                                always output a python program that answers that question. Here is the CSV:' + data;
+                                always output a python program that answers that question. Here are the first 30 rows of the CSV, including the header row:' + first30Rows;
         console.log("MESSAGES ARE: ", messages);
     });
 
@@ -360,7 +366,6 @@ app.get('/clear_data', async (req, res) => {
         
         // Clear the code_output table
         await client.query('DELETE FROM code_output');
-        console.log("DELETED DBS");
         
         client.release();
         res.status(200).send({ message: 'All data cleared from database tables.' });
