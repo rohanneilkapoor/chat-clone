@@ -327,9 +327,9 @@ app.get('/code_output', async (req, res) => {
     res.status(200).send(result.rows);
 });
 
-app.get('/', (req, res)=>{
-    res.send("Welcome to your server")
-})
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, "client", "index.html"));
+  });
 
 app.get('/clear_data', async (req, res) => {
     try {
@@ -354,7 +354,3 @@ app.get('/clear_data', async (req, res) => {
 });
 
 app.listen(port, () => console.log(`Server has started on port: ${port}`))
-
-app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "client", "index.html"));
-  });
