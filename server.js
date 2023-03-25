@@ -306,12 +306,17 @@ function queueHandler() {
 
 //route
 app.post('/api', async (req, res) => {
-    const { prompt } = req.body;
-    queue.push({ prompt, res });
-    if (queue.length === 1) {
+    try {
+      const { prompt } = req.body;
+      queue.push({ prompt, res });
+      if (queue.length === 1) {
         queueHandler();
+      }
+    } catch (error) {
+      console.error('Error in /api endpoint:', error);
+      res.status(500).send({ message: 'Internal Server Error' });
     }
-})
+  });
 
 app.get('/messages', async (req, res) => {
     const client = await pool.connect();
