@@ -170,11 +170,20 @@ async function sendPrompt(input) {
     messages.push(userInput)
     console.log("MESSAGES BEFORE API CALL IS: ", messages);
     console.log("right before chat completion")
-    const completion = await openai.createChatCompletion({
-        model: model,
-        messages: messages,
-        temperature: 0
-    })
+    try {
+        const completion = await openai.createChatCompletion({
+          model: model,
+          messages: messages,
+          temperature: 0,
+        });
+      
+        // Process the completion response
+        // ...
+      
+    } catch (error) {
+        console.error('Error in OpenAI API call:', error);
+        res.status(500).send({ message: 'Internal Server Error' });
+    }
     console.log("MESSAGES AFTER API CALL IS: ", messages);
     const APIResponse = completion.data.choices[0].message
     const APIResponseText = APIResponse.content
