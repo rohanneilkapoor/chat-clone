@@ -43,7 +43,7 @@ const openai = new OpenAIApi(configuration)
 
 const queue = [];
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'client')));
 
 app.post('/upload_csv', upload.single('csv'), async (req, res) => {
     const file = req.file;
