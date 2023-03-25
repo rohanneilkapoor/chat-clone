@@ -177,38 +177,36 @@ async function sendPrompt(input) {
           temperature: 0,
         });
       
-        // Process the completion response
-        // ...
+        console.log("MESSAGES AFTER API CALL IS: ", messages);
+        const APIResponse = completion.data.choices[0].message
+        const APIResponseText = APIResponse.content
+        console.log("API RESPONSE TEXT IS: ", APIResponseText)
+        //completion.data.choices[0].message.content = await runPython(APIResponseText)
+        messages.push(APIResponse)
+        if(APIResponseText.includes("import csv")){
+            let run = await runPython(APIResponseText)
+        } else{
+            const client = await pool.connect()
+            
+            // Truncate the table to remove all existing records
+            const truncateQuery = 'TRUNCATE TABLE code_output';
+            await client.query(truncateQuery);
+
+            // Insert the new content
+            const insertQuery = 'INSERT INTO code_output (output) VALUES ($1)';
+            await client.query(insertQuery, [APIResponseText])
+
+            client.release()
+        }
+        storeMessages('UPDATE chat_messages SET messages = $1 WHERE id = (SELECT id FROM chat_messages ORDER BY id ASC LIMIT 1)');
+
+        
+        return completion.data.choices
       
     } catch (error) {
         console.error('Error in OpenAI API call:', error);
         res.status(500).send({ message: 'Internal Server Error' });
     }
-    console.log("MESSAGES AFTER API CALL IS: ", messages);
-    const APIResponse = completion.data.choices[0].message
-    const APIResponseText = APIResponse.content
-    console.log("API RESPONSE TEXT IS: ", APIResponseText)
-    //completion.data.choices[0].message.content = await runPython(APIResponseText)
-    messages.push(APIResponse)
-    if(APIResponseText.includes("import csv")){
-        let run = await runPython(APIResponseText)
-    } else{
-        const client = await pool.connect()
-        
-        // Truncate the table to remove all existing records
-        const truncateQuery = 'TRUNCATE TABLE code_output';
-        await client.query(truncateQuery);
-
-        // Insert the new content
-        const insertQuery = 'INSERT INTO code_output (output) VALUES ($1)';
-        await client.query(insertQuery, [APIResponseText])
-
-        client.release()
-    }
-    storeMessages('UPDATE chat_messages SET messages = $1 WHERE id = (SELECT id FROM chat_messages ORDER BY id ASC LIMIT 1)');
-
-    
-    return completion.data.choices
 }
 
 async function runPython(pythonCode) {
