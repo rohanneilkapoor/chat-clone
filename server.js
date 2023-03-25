@@ -3,6 +3,7 @@ import { createRequire } from 'module'
 const DATABASE_URL = process.env.DATABASE_URL || "postgres://rohankapoor:password@localhost:5432/chat_db";
 const require = createRequire(import.meta.url)
 const fs = require('fs');
+const path = require('path');
 const express = require('express')
 const cors = require('cors')
 const app = express()
