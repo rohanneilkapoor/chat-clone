@@ -270,7 +270,7 @@ h1{
         const formData = new FormData();
         formData.append('csv', file);
         try {
-          const response = await fetch('http://localhost:8080/upload_csv', {
+          const response = await fetch('https://aqueous-hamlet-06344.herokuapp.com/upload_csv', {
             method: 'POST',
             body: formData,
           });
@@ -417,7 +417,7 @@ h1{
         event.preventDefault();
 
         // Make an asynchronous request to the server to clear the data
-        await fetch('http://localhost:8080/clear_data', {
+        await fetch('https://aqueous-hamlet-06344.herokuapp.com/clear_data', {
             method: 'GET'
         });
     });
@@ -443,7 +443,7 @@ h1{
       const data = { prompt };
 
       try {
-        const response = await fetch('http://localhost:8080/api', {
+        const response = await fetch('https://aqueous-hamlet-06344.herokuapp.com/api', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -455,7 +455,7 @@ h1{
         if (response.ok) {
           const result = await response.json();
           console.log(result);
-          const codeOutputResponse = await fetch('http://localhost:8080/code_output');
+          const codeOutputResponse = await fetch('https://aqueous-hamlet-06344.herokuapp.com/code_output');
           const cResponse = await codeOutputResponse.json();
           console.log("ALL CODE OUTPUTS: ", cResponse);
           const textResponse = cResponse[cResponse.length-1].output;
