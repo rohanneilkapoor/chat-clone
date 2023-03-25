@@ -1,5 +1,6 @@
 import { Configuration, OpenAIApi } from 'openai'
 import { createRequire } from 'module'
+import { fileURLToPath } from 'url';
 const DATABASE_URL = process.env.DATABASE_URL || "postgres://rohankapoor:password@localhost:5432/chat_db";
 const require = createRequire(import.meta.url)
 const fs = require('fs');
@@ -13,6 +14,8 @@ const parseString = promisify(require('xml2js').parseString)
 const { spawn } = require('child_process');
 const multer = require('multer');
 const fsPromises = fs.promises;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Configure multer for file storage
 const storage = multer.memoryStorage();
