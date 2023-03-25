@@ -331,6 +331,10 @@ app.get('/', (req, res)=>{
     res.send("Welcome to your server")
 })
 
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "client", "index.html"));
+  });
+
 app.get('/clear_data', async (req, res) => {
     try {
         const client = await pool.connect();
