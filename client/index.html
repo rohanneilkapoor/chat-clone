@@ -247,17 +247,26 @@ h1{
     console.log("location.hostname:", location.hostname);
     console.log("BASE_URL:", BASE_URL);
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       const spreadsheetContainer = document.getElementById('csv-container');
 
-      const preventHorizontalScroll = (event) => {
-        if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+      const preventSwipeNavigation = (event) => {
+        const container = event.currentTarget;
+        const scrollLeft = container.scrollLeft;
+
+        // Check if the user is at the left edge
+        const atLeftEdge = scrollLeft === 0 && event.deltaX < 0;
+        // Check if the user is at the right edge
+        const atRightEdge = scrollLeft === container.scrollWidth - container.clientWidth && event.deltaX > 0;
+
+        // Prevent default behavior if at either edge
+        if (atLeftEdge || atRightEdge) {
           event.preventDefault();
         }
       };
 
       // Add event listener for wheel events
-      spreadsheetContainer.addEventListener('wheel', preventHorizontalScroll, { passive: false });
+      spreadsheetContainer.addEventListener('wheel', preventSwipeNavigation, { passive: false });
     });
 
 
