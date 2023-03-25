@@ -234,7 +234,7 @@ h1{
         <div class="spacing hidden"></div>
       </div>
     </div>
-    <div class="csv-container hidden">
+    <div class="csv-container hidden" id="csv-container">
       <!-- CSV data code goes here -->
     </div>
   </div>
@@ -243,9 +243,22 @@ h1{
 
   <script>
 
-const BASE_URL = (location.hostname === "localhost" || location.hostname === "127.0.0.1") ? "http://localhost:8080" : "https://aqueous-hamlet-06344.herokuapp.com";
+    const BASE_URL = (location.hostname === "localhost" || location.hostname === "127.0.0.1") ? "http://localhost:8080" : "https://aqueous-hamlet-06344.herokuapp.com";
     console.log("location.hostname:", location.hostname);
     console.log("BASE_URL:", BASE_URL);
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const spreadsheetContainer = document.getElementById('csv-container');
+
+      const preventHorizontalScroll = (event) => {
+        if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+          event.preventDefault();
+        }
+      };
+
+      // Add event listener for wheel events
+      spreadsheetContainer.addEventListener('wheel', preventHorizontalScroll, { passive: false });
+    });
 
 
     //code for csv upload
