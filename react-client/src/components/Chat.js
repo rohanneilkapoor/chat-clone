@@ -54,6 +54,7 @@ function Chat() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    removeChatHighlights();
   
     const newMessages = [
       ...messages,
@@ -98,7 +99,6 @@ function Chat() {
         console.log('ALL CODE OUTPUTS: ', cResponse);
         console.log('ALL MESSAGE OUTPUTS: ', mResponse);
         const textResponse = cResponse[cResponse.length - 1].output;
-        console.log("TEXT RESPONSE: ", textResponse);
         if (
           textResponse.includes('ANSWER:') &&
           textResponse.includes('ROW INDICES:')
@@ -108,8 +108,7 @@ function Chat() {
                 formattedTextResponseArray,
             );
             const resultArray = JSON.parse(formattedTextResponse[1]);
-            //highlightRelevantRows(resultArray);
-            console.log("FORMATTED RESPONSE: ", formattedTextResponse[0]);
+            //highlightRelevantRows(resultArray); //remember to uncomment this out 
             setMessages([
                 ...newMessages.slice(0, newMessages.length - 1),
                 addMessageToDiv(formattedTextResponse[0], 'open.png'),
@@ -147,25 +146,6 @@ function Chat() {
   };
   
 
-  const removeTableHighlights = () => {
-    const table = document.querySelector('#csv-table');
-    const rows = table.querySelectorAll('tr');
-
-    rows.forEach((row) => {
-      row.classList.add('non-highlighted-row');
-      row.classList.remove('highlighted-row');
-    });
-  };
-
-  const removeChatHighlights = () => {
-    const messages = document.querySelector('#messages');
-    const divs = messages.querySelectorAll('div');
-    divs.forEach((div) => {
-      div.classList.add('non-highlighted-row');
-      div.classList.remove('highlighted-row');
-    });
-  };
-
   const extractAnswerAndRows = (inputString) => {
     const regex = /ANSWER:\s*(.+?),\s*ROW INDICES:\s*(.+?)(?=\nANSWER:|$)/g;
     const results = [];
@@ -197,24 +177,37 @@ function Chat() {
     return [combinedAnswers, combinedRowIndices];
   };
   
-  const highlightRelevantRows = (resultArray) => {
-    removeTableHighlights();
-    removeChatHighlights();
+  const highlightRelevantRows = (rowIndices) => {
     const table = document.querySelector('#csv-table');
     const rows = table.querySelectorAll('tr');
+
+    rows.forEach((row, index) => {
+        if (rowIndices.includes(index)) {
+            row.classList.add('highlighted-row');
+            row.classList.remove('non-highlighted-row');
+        } else {
+            row.classList.add('non-highlighted-row');
+            row.classList.remove('highlighted-row');
+        }
+    });
+  };
+
+  const removeTableHighlights = () => {
+    const table = document.querySelector('#csv-table');
+    const rows = table.querySelectorAll('tr');
+
+    rows.forEach((row) => {
+      row.classList.add('non-highlighted-row');
+      row.classList.remove('highlighted-row');
+    });
+  };
+
+  const removeChatHighlights = () => {
     const messages = document.querySelector('#messages');
     const divs = messages.querySelectorAll('div');
-  
-    resultArray.forEach((index) => {
-      rows[index].classList.add('highlighted-row');
-      rows[index].classList.remove('non-highlighted-row');
-    });
-  
-    divs.forEach((div, index) => {
-      if (resultArray.includes(index)) {
-        div.classList.add('highlighted-row');
-        div.classList.remove('non-highlighted-row');
-      }
+    divs.forEach((div) => {
+      div.classList.add('non-highlighted-row');
+      div.classList.remove('highlighted-row');
     });
   };
 
