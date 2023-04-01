@@ -350,6 +350,16 @@ app.get('/code_output', async (req, res) => {
     res.status(200).send(result.rows);
 });
 
+app.get('/api/pages', async (req, res) => {
+    try {
+      const result = await pool.query('SELECT * FROM pages');
+      res.status(200).json(result.rows);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'An error occurred while fetching pages.' });
+    }
+});
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, "client", "index.html"));
   });
