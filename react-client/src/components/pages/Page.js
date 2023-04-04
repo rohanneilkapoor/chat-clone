@@ -95,7 +95,7 @@ function Page({ title }) {
     }
   }
 
-  function getContent() {
+  function getCSVContent() {
     switch (title) {
       case 'Contacts':
         return <p>Contact information goes here...</p>;
@@ -131,8 +131,8 @@ function Page({ title }) {
           Write something...
         </div>
       </div>
-      <div className="csv-container hidden" id="csv-container">
-        {getContent()}
+      <div className="csv-container" id="csv-container">
+        {getCSVContent()}
       </div>
     </div>
   );

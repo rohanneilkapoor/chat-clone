@@ -36,11 +36,6 @@ editableDiv.addEventListener('paste', (event) => {
 });
 
 document.addEventListener('DOMContentLoaded', function () {
-    
-    
-
-
-
 
     const spreadsheetContainer = document.getElementById('csv-container');
 
