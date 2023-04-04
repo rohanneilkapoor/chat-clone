@@ -1,24 +1,24 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef} from 'react';
 
 
-function Page({ title }) {
+function Page({ pageId, appState, setAppState }) {
+  const page = appState.pagesById[pageId];
+  const title = page.title;
+  const text = page.text;
+  console.log({pageId, title, text})
   const editableDiv = useRef(null);
   const placeholderDiv = useRef(null);
-  const [content, setContent] = useState({});
+  const showPlaceholder = text === '';
 
   const setCaretToEnd = (element) => {
-    console.log("Text content of the element:", element.textContent);
     const range = document.createRange();
     const selection = window.getSelection();
-    console.log("Current caret position:", selection.anchorOffset);
     if (element.childNodes.length > 0) {
       range.selectNodeContents(element);
       range.collapse(false); // Set to false to move the cursor to the end
       selection.removeAllRanges();
       selection.addRange(range);
-      console.log("hellow world");
     }
-    console.log("Caret position after setting to end:", selection.anchorOffset);
   };
 
   useEffect(() => {
@@ -35,23 +35,33 @@ function Page({ title }) {
     };
 
     const handleInput = (event) => {
-      //setContent({ ...content, [title]: editableDiv.current.innerHTML });
-      console.log('my name is adi');
       setCaretToEnd(editableDiv.current);
-
     };
+
+    const setPageText = (newText) => {
+      setAppState((prevState) => {
+        console.log("PREVIOUS STATE BEFORE UPDATE", JSON.stringify(prevState));
+        const newState = JSON.parse(JSON.stringify(prevState));
+        newState.pagesById[pageId].text = newText;
+        console.log("updating page state: ", JSON.stringify({prevState, newState}));
+        return newState;
+      });
+    }
 
     placeholderDiv.current.addEventListener('click', () => {
       placeholderDiv.current.style.display = 'none';
       editableDiv.current.style.display = 'block';
+      editableDiv.current.innerHTML = appState.pagesById[pageId].text;
       editableDiv.current.focus();
     });
 
     editableDiv.current.addEventListener('blur', () => {
-      if (editableDiv.current.textContent.trim() === '') {
+      const newText = editableDiv.current.textContent;
+      if (newText.trim() === '') {
         editableDiv.current.style.display = 'none';
         placeholderDiv.current.style.display = 'block';
       }
+      setPageText(newText);
     });
 
     editableDiv.current.addEventListener('input', handleInput);
@@ -64,19 +74,8 @@ function Page({ title }) {
         editableDiv.current.removeEventListener('input', handleInput);
       }
     };
-  }, [content, title]);
+  }, [appState, pageId, setAppState, title]);
 
-  useEffect(() => {
-    if (content[title]) {
-      editableDiv.current.innerHTML = content[title];
-      editableDiv.current.style.display = 'block';
-      placeholderDiv.current.style.display = 'none';
-    } else {
-      editableDiv.current.innerHTML = '';
-      editableDiv.current.style.display = 'none';
-      placeholderDiv.current.style.display = 'block';
-    }
-  }, [title, content]);
 
   function getEmoji() {
     switch (title) {
@@ -111,7 +110,7 @@ function Page({ title }) {
         return <p>Content not found.</p>;
     }
   }
-
+  console.log({appState});
   return (
     <div className="middle-container">
       <div className="top-section top-section-padding">
@@ -122,11 +121,12 @@ function Page({ title }) {
           className="top-section"
           contentEditable="true"
           dir="auto"
-          style={{ display: 'none' }}
+          style={{ display: showPlaceholder ? 'none' : 'block' }}
         ></div>
         <div
           ref={placeholderDiv}
           className="top-section placeholder"
+          style ={{ display: showPlaceholder ? 'block' : 'none' }}
         >
           Write something...
         </div>
