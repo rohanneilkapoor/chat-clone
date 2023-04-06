@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react';
 function Page({ pageId, appState, setAppState }) {
   const page = appState.pagesById[pageId];
   const title = page.title;
+  const emoji = page.emoji;
   const text = page.text;
   console.log({ pageId, title, text });
   const editableDiv = useRef(null);
@@ -83,23 +84,6 @@ function Page({ pageId, appState, setAppState }) {
     };
   }, [appState, pageId, setAppState, title, text]);
 
-  function getEmoji() {
-    switch (title) {
-      case 'Contacts':
-        return '👥';
-      case 'Quotes':
-        return '✌';
-      case 'Orders':
-        return '📦';
-      case 'Invoices':
-        return '📝';
-      case 'Purchasing':
-        return '💸';
-      default:
-        return '';
-    }
-  }
-
   function getCSVContent() {
     switch (title) {
       case 'Contacts':
@@ -120,7 +104,7 @@ function Page({ pageId, appState, setAppState }) {
   return (
     <div className="middle-container">
       <div className="top-section top-section-padding">
-        <span className="big-emoji">{getEmoji()}</span>
+        <span className="big-emoji">{emoji}</span>
         <h1 className="doc-title">{title}</h1>
         <div
           ref={editableDiv}
