@@ -50,9 +50,9 @@ function App() {
           ]  
         }
       },
-      "contacts2": {
-        title: "Contacts2",
-        emoji: "👥",
+      "quotes": {
+        title: "Quotes",
+        emoji: "✌️",
         text: "",
         csv: {
           rawText: "",
@@ -65,7 +65,55 @@ function App() {
             },
           ]  
         }
-      }
+      },
+      "orders": {
+        title: "Orders",
+        emoji: "📦",
+        text: "",
+        csv: {
+          rawText: "",
+        },
+        chat: {
+          messages: [
+            {
+              img: "open.png",
+              prompt: "Hi there. Ask me questions about your data.",
+            },
+          ]  
+        }
+      },
+      "invoices": {
+        title: "Invoices",
+        emoji: "📄",
+        text: "",
+        csv: {
+          rawText: "",
+        },
+        chat: {
+          messages: [
+            {
+              img: "open.png",
+              prompt: "Hi there. Ask me questions about your data.",
+            },
+          ]  
+        }
+      },
+      "purchasing": {
+        title: "Purchasing",
+        emoji: "💸",
+        text: "",
+        csv: {
+          rawText: "",
+        },
+        chat: {
+          messages: [
+            {
+              img: "open.png",
+              prompt: "Hi there. Ask me questions about your data.",
+            },
+          ]  
+        }
+      },
     }
   }
   const [appState, setAppState] = useState(INIT_APP_STATE);
@@ -79,7 +127,17 @@ function App() {
           <Routes>
             {Object.keys(appState.pagesById).map((pageId) => {
               return (
-                <Route path={`/${pageId}`} element={<Page pageId={pageId} appState={appState} setAppState={setAppState} />} />
+                <Route
+                  path={`/${pageId}`}
+                  element={
+                    <Page
+                      key={pageId} // Add the key prop here
+                      pageId={pageId}
+                      appState={appState}
+                      setAppState={setAppState}
+                    />
+                  }
+                />    
               )
             })}
           </Routes>
