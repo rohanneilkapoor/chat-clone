@@ -45,7 +45,7 @@ function App() {
           messages: [
             {
               img: "open.png",
-              prompt: "Hi there. Ask me questions about your data.",
+              prompt: "Hi there. Ask me questions about your contacts data.",
             },
           ]  
         }
@@ -61,7 +61,7 @@ function App() {
           messages: [
             {
               img: "open.png",
-              prompt: "Hi there. Ask me questions about your data.",
+              prompt: "Hi there. Ask me questions about your quotes data.",
             },
           ]  
         }
@@ -77,7 +77,7 @@ function App() {
           messages: [
             {
               img: "open.png",
-              prompt: "Hi there. Ask me questions about your data.",
+              prompt: "Hi there. Ask me questions about your orders data.",
             },
           ]  
         }
@@ -93,7 +93,7 @@ function App() {
           messages: [
             {
               img: "open.png",
-              prompt: "Hi there. Ask me questions about your data.",
+              prompt: "Hi there. Ask me questions about your invoices data.",
             },
           ]  
         }
@@ -109,7 +109,7 @@ function App() {
           messages: [
             {
               img: "open.png",
-              prompt: "Hi there. Ask me questions about your data.",
+              prompt: "Hi there. Ask me questions about your purchasing data.",
             },
           ]  
         }
@@ -123,7 +123,6 @@ function App() {
       <div className="App">
         <header className="App-header">
           <Navigation appState={appState} />
-          <Chat />
           <Routes>
             {Object.keys(appState.pagesById).map((pageId) => {
               return (
