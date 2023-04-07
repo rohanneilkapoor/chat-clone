@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css'; // Import the styles
 
 function Page({ pageId, appState, setAppState }) {
   const page = appState.pagesById[pageId];
@@ -6,31 +8,8 @@ function Page({ pageId, appState, setAppState }) {
   const emoji = page.emoji;
   const text = page.text;
   console.log({ pageId, title, text });
-  const editableDiv = useRef(null);
-  const placeholderDiv = useRef(null);
 
-  const setCaretToEnd = (element) => {
-    const range = document.createRange();
-    const selection = window.getSelection();
-    if (element.childNodes.length > 0) {
-      range.selectNodeContents(element);
-      range.collapse(false);
-      selection.removeAllRanges();
-      selection.addRange(range);
-    }
-  };
-
-  const handleClickOutside = (event) => {
-    if (
-      !editableDiv.current.contains(event.target) &&
-      !placeholderDiv.current.contains(event.target)
-    ) {
-      if (editableDiv.current.textContent.trim() === '') {
-        editableDiv.current.style.display = 'none';
-        placeholderDiv.current.style.display = 'block';
-      }
-    }
-  };
+  const [editorText, setEditorText] = useState(text);
 
   const setPageText = (newText) => {
     setAppState((prevState) => {
@@ -43,36 +22,10 @@ function Page({ pageId, appState, setAppState }) {
   };
 
   useEffect(() => {
-    if (text === '') {
-      editableDiv.current.style.display = 'none';
-      placeholderDiv.current.style.display = 'block';
-    } else {
-      editableDiv.current.style.display = 'block';
-      placeholderDiv.current.style.display = 'none';
-    }
+    setPageText(editorText);
+  }, [editorText]);
 
-    placeholderDiv.current.addEventListener('click', () => {
-      placeholderDiv.current.style.display = 'none';
-      editableDiv.current.style.display = 'block';
-      editableDiv.current.innerHTML = appState.pagesById[pageId].text;
-      editableDiv.current.focus();
-    });
-
-    editableDiv.current.addEventListener('blur', () => {
-      const newText = editableDiv.current.textContent;
-      if (newText.trim() === '') {
-        editableDiv.current.style.display = 'none';
-        placeholderDiv.current.style.display = 'block';
-      }
-      setPageText(newText);
-    });
-
-    document.body.addEventListener('click', handleClickOutside);
-
-    return () => {
-      document.body.removeEventListener('click', handleClickOutside);
-    };
-  }, [appState, pageId, setAppState, title, text]);
+  
 
   function getCSVContent() {
     switch (title) {
@@ -346,17 +299,13 @@ function Page({ pageId, appState, setAppState }) {
         <div className="top-section top-section-padding">
           <span className="big-emoji">{emoji}</span>
           <h1 className="doc-title">{title}</h1>
-          <div
-            ref={editableDiv}
-            className="top-section"
-            contentEditable="true"
-            dir="auto"
-          >
-            {text}
-          </div>
-          <div ref={placeholderDiv} className="top-section placeholder">
-            Write something...
-          </div>
+          <ReactQuill
+          className="custom-quill-body"
+            value={editorText}
+            onChange={(content, _, __, editor) => setEditorText(editor.getHTML())}
+            placeholder="Write something..."
+            theme="snow"
+          />
         </div>
         <div className="csv-container" id="csv-container">
           {getCSVContent()}

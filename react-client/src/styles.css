@@ -48,6 +48,44 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
   }
+  .custom-quill-body .ql-editor {
+    font-family: 'Satoshi-Medium', sans-serif;
+    margin: 0 auto;
+    color: #151E1A;
+    font-size: 17px;
+    line-height: 26px;
+    background-color: #FCFDFC;
+    -webkit-user-select: text; /* for Chrome and Safari */
+    -moz-user-select: text; /* for Firefox */
+    -ms-user-select: text; /* for Internet Explorer and Edge */
+    user-select: text; /* standard syntax */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    padding: 0;
+  }
+  .custom-quill-body .ql-editor.ql-blank::before {
+    /* Add your custom placeholder styling here */
+    color: #929996;
+    font-style: inherit; /* Change the font style */
+    left: 0;
+  }
+  
+  .custom-quill-body .ql-container.ql-snow {
+    /* Add any additional styling to remove borders or change the background color if needed */
+    border: none;
+    background-color: inherit;
+  }
+  .custom-quill-body .ql-toolbar {
+    display: none;
+  }
+
+  .custom-tooltip {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 5px;
+    z-index: 100;
+  }
 
   @keyframes flash {
     0%, 100% {
