@@ -198,6 +198,7 @@ function Page({ pageId, appState, setAppState }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     removeChatHighlights();
+    removeTableHighlights();
   
     const newMessages = [
       ...messages,
@@ -251,7 +252,7 @@ function Page({ pageId, appState, setAppState }) {
                 formattedTextResponseArray,
             );
             const resultArray = JSON.parse(formattedTextResponse[1]);
-            //highlightRelevantRows(resultArray); //remember to uncomment this out 
+            highlightRelevantRows(resultArray); 
             setMessages([
                 ...newMessages.slice(0, newMessages.length - 1),
                 addMessageToDiv(formattedTextResponse[0], 'open.png'),
