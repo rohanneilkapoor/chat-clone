@@ -69,6 +69,9 @@ function Page({ pageId, appState, setAppState }) {
       for (let j = 0; j < cells.length; j++) {
         const cell = document.createElement("td");
         cell.textContent = cells[j];
+        if (cells[j].length > 40) { 
+          cell.classList.add("wrap-cell");
+        }
         row.appendChild(cell);
       }
       table.appendChild(row);

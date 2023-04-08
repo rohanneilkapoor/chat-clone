@@ -161,6 +161,7 @@
   align-items: center; /* align items to center by default */
 }
 
+
 .profile-picture {
   width: 32px;
   height: 32px;
@@ -271,14 +272,22 @@ h1{
   border: 1px solid #E6E6E6;
 }
 
-.csv-container th, .csv-container td {
-    padding-top: 6px;
-    padding-bottom: 6px;
-    padding-left: 8px;
-    padding-right: 8px;
-    border: 1px solid #E6E6E6;
-    white-space:nowrap;
+.csv-container .wrap-cell {
+  white-space: normal;
+  max-width: 350px;
+  word-wrap: break-word;
 }
+
+.csv-container th, .csv-container td {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  padding-left: 8px;
+  padding-right: 8px;
+  border: 1px solid #E6E6E6;
+  white-space: nowrap; /* Change back to nowrap */
+}
+
+
 .highlighted-row {
   background-color: #DFECE6;
 }
