@@ -164,7 +164,7 @@
 .profile-picture {
   width: 32px;
   height: 32px;
-  margin-right: 16px;
+  margin-right: 12px;
   border-radius: 50%;
   align-self: center;
 
@@ -180,7 +180,7 @@ h1{
   padding: 12px;
   font-size: 36px;
   line-height: 49px;
-  margin-bottom: 0;
+  margin-bottom: 12px;
 }
 
 .csv-upload-label {

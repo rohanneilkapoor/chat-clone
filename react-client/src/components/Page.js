@@ -8,6 +8,9 @@ function Page({ pageId, appState, setAppState }) {
   const emoji = page.emoji;
   const text = page.text;
   const csv = page.csv.rawText;
+  const introMessage = page.chat.messages[0].prompt;
+  const introImage = page.chat.messages[0].img;
+  console.log("INTRO MESSAGE", introImage);
   console.log({ pageId, title, text });
 
   //EDITOR CODE
@@ -377,16 +380,24 @@ function Page({ pageId, appState, setAppState }) {
           </form>
 
           <div id="messages" ref={messagesDivRef}>
-          {messages.length > 0 && messages.map((message, i) => (
-              <div key={i} className={message.classNames.join(' ')}>
-                  <img
-                  className="profile-picture"
-                  src={message.image}
-                  alt="Profile"
-                  />
-                  <div>{message.text}</div>
-              </div>
-          ))}
+            <div class="message">
+              <img
+              className="profile-picture"
+              src={introImage}
+              alt="Profile"
+              />
+              <div>{introMessage}</div>
+            </div>
+            {messages.length > 0 && messages.map((message, i) => (
+                <div key={i} className={message.classNames.join(' ')}>
+                    <img
+                    className="profile-picture"
+                    src={message.image}
+                    alt="Profile"
+                    />
+                    <div>{message.text}</div>
+                </div>
+            ))}
           </div>
           <div className="spacing"></div>
         </div>
