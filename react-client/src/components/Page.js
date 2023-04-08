@@ -46,6 +46,36 @@ function Page({ pageId, appState, setAppState }) {
 
   //CSV CODE
   const [csvTable, setCsvTable] = useState(null);
+  const csvContainerRef = useRef(null);
+
+  const preventSwipeNavigation = (event) => {
+    const container = event.currentTarget;
+    const scrollLeft = container.scrollLeft;
+  
+    // Check if the user is at the left edge
+    const atLeftEdge = scrollLeft === 0 && event.deltaX < 0;
+    // Check if the user is at the right edge
+    const atRightEdge = scrollLeft === container.scrollWidth - container.clientWidth && event.deltaX > 0;
+  
+    // Prevent default behavior if at either edge
+    if (atLeftEdge || atRightEdge) {
+      event.preventDefault();
+    }
+  };
+
+  useEffect(() => {
+    if (csvContainerRef.current) {
+      csvContainerRef.current.addEventListener('wheel', preventSwipeNavigation, { passive: false });
+    }
+  
+    return () => {
+      if (csvContainerRef.current) {
+        csvContainerRef.current.removeEventListener('wheel', preventSwipeNavigation, { passive: false });
+      }
+    };
+  }, [csvContainerRef.current]);
+  
+
   const displayCSV = (csv) => {
     const table = document.createElement("table");
     table.id = "csv-table";
@@ -379,6 +409,7 @@ function Page({ pageId, appState, setAppState }) {
         <div
           className="csv-container"
           id="csv-container"
+          ref={csvContainerRef}
           dangerouslySetInnerHTML={{ __html: csvTable }}
         />
       </div>
