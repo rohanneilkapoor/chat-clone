@@ -7,8 +7,10 @@ function Page({ pageId, appState, setAppState }) {
   const title = page.title;
   const emoji = page.emoji;
   const text = page.text;
+  const csv = page.csv.rawText;
   console.log({ pageId, title, text });
 
+  //EDITOR CODE
   const [editorText, setEditorText] = useState(text);
 
   const setPageText = (newText) => {
@@ -25,41 +27,86 @@ function Page({ pageId, appState, setAppState }) {
     setPageText(editorText);
   }, [editorText]);
 
-  // Add the useRef for the ReactQuill component
   const quillRef = useRef(null);
 
   const handleTopSectionClick = (e) => {
     if (quillRef.current) {
-      const quillEditor = quillRef.current.getEditor(); // Get the Quill editor instance
-      const quillEditorContainer = quillEditor.container; // Get the Quill editor container element
+      const quillEditor = quillRef.current.getEditor(); 
+      const quillEditorContainer = quillEditor.container; 
   
-      // Check if the click target is inside the Quill editor container
       if (!quillEditorContainer.contains(e.target)) {
-        const length = quillEditor.getLength(); // Get the length of the editor content
+        const length = quillEditor.getLength(); 
   
-        quillRef.current.focus(); // Focus the editor
-        quillEditor.setSelection(length, length); // Set the cursor position to the bottom of the editor
+        quillRef.current.focus(); 
+        quillEditor.setSelection(length, length); 
       }
     }
   };
-
-  function getCSVContent() {
-    switch (title) {
-      case 'Contacts':
-        return <p>Contact information goes here...</p>;
-      case 'Quotes':
-        return <p>Quote information goes here...</p>;
-      case 'Orders':
-        return <p>Order information goes here...</p>;
-      case 'Invoices':
-        return <p>Invoice information goes here...</p>;
-      case 'Purchasing':
-        return <p>Purchasing information goes here...</p>;
-      default:
-        return <p>Content not found.</p>;
-    }
-  }
   console.log({appState});
+
+  //CSV CODE
+  const [csvTable, setCsvTable] = useState(null);
+  const displayCSV = (csv) => {
+    const table = document.createElement("table");
+    table.id = "csv-table";
+    let rows = csv.split("\n");
+  
+    // Remove last row if it's empty
+    if (rows[rows.length - 1].trim() === "") {
+      rows.pop();
+    }
+  
+    // Parse CSV data
+    for (let i = 0; i < rows.length; i++) {
+      const cells = parseCSVRow(rows[i]);
+      const row = document.createElement("tr");
+  
+      // Add a new cell at the beginning of each row containing the row number
+      const rowIndexCell = document.createElement("td");
+      rowIndexCell.textContent = i + 1;
+      row.appendChild(rowIndexCell);
+  
+      for (let j = 0; j < cells.length; j++) {
+        const cell = document.createElement("td");
+        cell.textContent = cells[j];
+        row.appendChild(cell);
+      }
+      table.appendChild(row);
+    }
+  
+    // Set the table's HTML as state
+    setCsvTable(table.outerHTML);
+  };
+
+  const parseCSVRow = (row) => {
+    let cells = [];
+    let currentCell = "";
+    let withinQuotes = false;
+    for (let i = 0; i < row.length; i++) {
+      const char = row.charAt(i);
+      if (char === "," && !withinQuotes) {
+        cells.push(currentCell.trim());
+        currentCell = "";
+      } else if (char === '"') {
+        withinQuotes = !withinQuotes;
+      } else {
+        currentCell += char;
+      }
+    }
+    cells.push(currentCell.trim());
+    return cells;
+  };
+
+  useEffect(() => {
+    if (csv) {
+      displayCSV(csv);
+    }
+  }, [csv]);
+  
+  
+  
+
+
 
   //CHAT CODE
   const [messages, setMessages] = useState([]);
@@ -326,9 +373,11 @@ function Page({ pageId, appState, setAppState }) {
           
 
         </div>
-        <div className="csv-container" id="csv-container">
-          {getCSVContent()}
-        </div>
+        <div
+          className="csv-container"
+          id="csv-container"
+          dangerouslySetInnerHTML={{ __html: csvTable }}
+        />
       </div>
     </div>
   );
