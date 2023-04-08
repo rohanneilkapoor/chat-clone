@@ -25,7 +25,8 @@ function Page({ pageId, appState, setAppState }) {
     setPageText(editorText);
   }, [editorText]);
 
-  
+  // Add the useRef for the ReactQuill component
+ 
 
   function getCSVContent() {
     switch (title) {
@@ -300,12 +301,14 @@ function Page({ pageId, appState, setAppState }) {
           <span className="big-emoji">{emoji}</span>
           <h1 className="doc-title">{title}</h1>
           <ReactQuill
-          className="custom-quill-body"
             value={editorText}
             onChange={(content, _, __, editor) => setEditorText(editor.getHTML())}
             placeholder="Write something..."
             theme="snow"
+            className="custom-quill-body"
           />
+          
+
         </div>
         <div className="csv-container" id="csv-container">
           {getCSVContent()}

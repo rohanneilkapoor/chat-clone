@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Navigation from './Navigation';
 import Chat from './Chat';
-import Page from './pages/Page';
+import Page from './Page';
 import CsvContainer from './CsvContainer';
 import '../styles.css';
 
