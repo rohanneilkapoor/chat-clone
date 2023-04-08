@@ -110,12 +110,11 @@
   #client-form {
     position: fixed;
     bottom: 0;
-    padding-right: 16px;
-    padding-left: 16px;
-    padding-bottom: 32px;
-    padding-bottom: 32px;
+    padding-right: 12px;
+    padding-left: 12px;
+    padding-bottom: 24px;
     width: 100%;
-    max-width: 500px; /* adjust as needed */
+    max-width: 400px; /* adjust as needed */
     box-sizing: border-box;
   }
   button {
@@ -152,8 +151,8 @@
     color: #929996; /* Replace with your desired color */
   }
   .message {
-  padding-right: 20px;
-  padding-left: 20px;
+  padding-right: 12px;
+  padding-left: 12px;
   padding-top: 16px;
   padding-bottom: 16px;
   border-radius: 12px;
@@ -178,13 +177,10 @@
 
 h1{
   font-family: 'Satoshi-Bold', sans-serif;
-  padding: 20px;
+  padding: 12px;
   font-size: 36px;
   line-height: 49px;
-  margin-block-start: 0.67em;
-  margin-block-end: 0.67em;
-  margin-inline-start: 0px;
-  margin-inline-end: 0px;
+  margin-bottom: 0;
 }
 
 .csv-upload-label {
@@ -239,10 +235,10 @@ h1{
 }
 
 .chat-container {
-  width: 500px;
+  width: 400px;
   flex-grow: 1;
-  max-height: calc(100vh - 16px - 16px - 1px); /* 16px for padding, 16px for #client-form padding, 1px for border-top */
-  padding: 16px;
+  max-height: calc(100vh - 12px - 12px - 1px); /* 16px for padding, 16px for #client-form padding, 1px for border-top */
+  padding: 12px;
   position: fixed;
   top: 0;
   right: 0;
@@ -335,7 +331,7 @@ h1{
 
 .left-navbar li {
   padding: 8px;
-  width: 234px;
+  width: 214px;
   border-radius: 8px;
 }
 
@@ -390,8 +386,8 @@ h1{
 
 .middle-container {
   position: fixed;
-  left: 266px;
-  right: 532px;
+  left: 246px;
+  right: 424px;
   top: 0;
   bottom: 0;
   overflow-y: auto; /* Allow vertical scrolling */
