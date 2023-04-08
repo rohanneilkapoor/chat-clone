@@ -26,7 +26,22 @@ function Page({ pageId, appState, setAppState }) {
   }, [editorText]);
 
   // Add the useRef for the ReactQuill component
- 
+  const quillRef = useRef(null);
+
+  const handleTopSectionClick = (e) => {
+    if (quillRef.current) {
+      const quillEditor = quillRef.current.getEditor(); // Get the Quill editor instance
+      const quillEditorContainer = quillEditor.container; // Get the Quill editor container element
+  
+      // Check if the click target is inside the Quill editor container
+      if (!quillEditorContainer.contains(e.target)) {
+        const length = quillEditor.getLength(); // Get the length of the editor content
+  
+        quillRef.current.focus(); // Focus the editor
+        quillEditor.setSelection(length, length); // Set the cursor position to the bottom of the editor
+      }
+    }
+  };
 
   function getCSVContent() {
     switch (title) {
@@ -297,10 +312,11 @@ function Page({ pageId, appState, setAppState }) {
         </div>
       </div>
       <div className="middle-container">
-        <div className="top-section top-section-padding">
+        <div className="top-section top-section-padding" onClick={handleTopSectionClick}>
           <span className="big-emoji">{emoji}</span>
           <h1 className="doc-title">{title}</h1>
           <ReactQuill
+            ref={quillRef}
             value={editorText}
             onChange={(content, _, __, editor) => setEditorText(editor.getHTML())}
             placeholder="Write something..."
