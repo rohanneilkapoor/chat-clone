@@ -118,16 +118,28 @@
     box-sizing: border-box;
   }
   button {
-    background-color: transparent;
-    border: none;
-    padding: 8px;
+    background: #FCFDFC;
+    border: 1px solid #E6E6E6;
+    box-shadow: 0px 1px 1px rgba(61, 92, 76, 0.2);
+    border-radius: 6px;
+    font-family: 'Satoshi-Bold', sans-serif;
+    font-size: 15px;
+    line-height: 22px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 8px;
+    padding-bottom: 8px;
   }
 
   button:hover {
-    background-color: #E1EAE6;
+    box-shadow: 0px 0px 0px rgba(61, 92, 76, 0.2);
+    cursor: pointer;
   }
   .button-active {
     background-color: #E1EAE6;
+  }
+  .button-icon{
+    padding-right: 8px;
   }
 
   .icon {
@@ -153,11 +165,24 @@
   .message {
   padding-right: 12px;
   padding-left: 12px;
-  padding-top: 16px;
-  padding-bottom: 16px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
   border-radius: 12px;
   display: flex;
-  align-items: center; /* align items to center by default */
+  flex-direction: column;
+  align-items: stretch; 
+}
+
+.message-content {
+  display: flex;
+  align-items: center;
+  width: 100%; /* set the width to 100% */
+}
+
+.create-page-button {
+  margin-top: 12px;
+  align-self: flex-end;
 }
 
 
@@ -259,6 +284,11 @@ h1{
   overflow-x: auto;
   margin-left: auto;
   margin-right: auto;
+  border-collapse: collapse;
+}
+
+.csv-container tr:first-child td {
+  font-family: 'Satoshi-Bold', sans-serif;
 }
 
 .csv-container table {
@@ -278,8 +308,11 @@ h1{
   padding-top: 6px;
   padding-bottom: 6px;
   padding-left: 8px;
-  padding-right: 8px;
-  border: 1px solid #E6E6E6;
+  padding-right: 32px;
+  border-top: 1px solid #E6E6E6;
+  border-bottom: 1px solid #E6E6E6;
+  border-left: none;
+  border-right: none;
   white-space: nowrap; /* Change back to nowrap */
 }
 

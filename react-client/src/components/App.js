@@ -148,7 +148,9 @@ function App() {
           ]  
         }
       },
-    }
+    },
+    pageIds: ["contacts", "quotes", "orders", "invoices", "purchasing"],
+    activePageId: "contacts", // Include an activePageId too
   }
   const [appState, setAppState] = useState(INIT_APP_STATE);
 
@@ -175,6 +177,7 @@ function App() {
             })}
           </Routes>
         </header>
+        <button>hello</button>
       </div>
     </Router>
   );

@@ -13,6 +13,33 @@ function Page({ pageId, appState, setAppState }) {
   console.log("INTRO MESSAGE", introImage);
   console.log({ pageId, title, text });
 
+  //CREATE NEW PAGE
+  const createNewPage = () => {
+    setAppState((prevState) => {
+      const newState = JSON.parse(JSON.stringify(prevState));
+      const newPageId = Date.now().toString();
+      newState.pagesById[newPageId] = {
+        title: `New Page ${Object.keys(newState.pagesById).length + 1}`,
+        emoji: "📄",
+        text: "",
+        csv: {
+          rawText: "",
+        },
+        chat: {
+          messages: [
+            {
+              prompt: "Welcome to your new page!",
+              img: "open.png",
+            },
+          ],
+        },
+      };
+      newState.pageIds.push(newPageId);
+      newState.activePageId = newPageId;
+      return newState;
+    });
+  };
+
   //EDITOR CODE
   const [editorText, setEditorText] = useState(text);
 
@@ -95,9 +122,14 @@ function Page({ pageId, appState, setAppState }) {
       const row = document.createElement("tr");
   
       // Add a new cell at the beginning of each row containing the row number
-      const rowIndexCell = document.createElement("td");
-      rowIndexCell.textContent = i + 1;
-      row.appendChild(rowIndexCell);
+      if (i > 0) {
+        const rowIndexCell = document.createElement("td");
+        rowIndexCell.textContent = i; // Use i as the row number (starting from 1)
+        row.appendChild(rowIndexCell);
+      } else if (i === 0) {
+        const emptyCell = document.createElement("td");
+        row.appendChild(emptyCell);
+      }
   
       for (let j = 0; j < cells.length; j++) {
         const cell = document.createElement("td");
@@ -170,12 +202,14 @@ function Page({ pageId, appState, setAppState }) {
     };
   }, []);
 
-  const addMessageToDiv = (prompt, image) => {
+  const addMessageToDiv = (prompt, image, includeButton = false) => {
     const message = {
       image: image,
       text: prompt,
       classNames: ['message', 'non-highlighted-row'],
+      includeButton: includeButton,
     };
+
   
     if (prompt === 'Loading...') {
       message.classNames.push('flash');
@@ -187,6 +221,7 @@ function Page({ pageId, appState, setAppState }) {
         !prompt.includes('There was an error.')
       ) {
         message.classNames.push('highlighted-row');
+        
       } else if (prompt.includes('There was an error.')) {
         message.classNames.push('error');
       }
@@ -199,6 +234,7 @@ function Page({ pageId, appState, setAppState }) {
     e.preventDefault();
     removeChatHighlights();
     removeTableHighlights();
+    removeButtonFromLastMessage();
   
     const newMessages = [
       ...messages,
@@ -255,7 +291,7 @@ function Page({ pageId, appState, setAppState }) {
             highlightRelevantRows(resultArray); 
             setMessages([
                 ...newMessages.slice(0, newMessages.length - 1),
-                addMessageToDiv(formattedTextResponse[0], 'open.png'),
+                addMessageToDiv(formattedTextResponse[0], 'open.png', true),
             ]);
             } else {
                 setMessages([
@@ -355,6 +391,19 @@ function Page({ pageId, appState, setAppState }) {
     });
   };
 
+  const removeButtonFromLastMessage = () => {
+    const messagesDiv = messagesDivRef.current;
+    const lastMessageDiv = messagesDiv.lastElementChild;
+  
+    if (lastMessageDiv) {
+      const button = lastMessageDiv.querySelector('.create-page-button');
+      if (button) {
+        lastMessageDiv.removeChild(button);
+      }
+    }
+  };
+  
+
 
   //Chat end
 
@@ -382,22 +431,32 @@ function Page({ pageId, appState, setAppState }) {
 
           <div id="messages" ref={messagesDivRef}>
             <div class="message">
-              <img
-              className="profile-picture"
-              src={introImage}
-              alt="Profile"
-              />
-              <div>{introMessage}</div>
+              <div class="message-content">
+                <img
+                className="profile-picture"
+                src={introImage}
+                alt="Profile"
+                />
+                <div>{introMessage}</div>
+              </div>
             </div>
             {messages.length > 0 && messages.map((message, i) => (
-                <div key={i} className={message.classNames.join(' ')}>
-                    <img
+              <div key={i} className={message.classNames.join(' ')}>
+                <div className="message-content">
+                  <img
                     className="profile-picture"
                     src={message.image}
                     alt="Profile"
-                    />
-                    <div>{message.text}</div>
+                  />
+                  <div>{message.text}</div>
                 </div>
+                {message.includeButton && (
+                  <button className="create-page-button" onClick={createNewPage}>
+                    <img className="button-icon" src="../icons/plus.svg" alt="Add icon" />
+                    Create Sub-Report
+                  </button>
+                )}
+              </div>
             ))}
           </div>
           <div className="spacing"></div>
