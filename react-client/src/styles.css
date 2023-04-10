@@ -362,29 +362,85 @@ h1{
   line-height: 20px;
 }
 
+.nav-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.nested-pages {
+  padding-left: 24px !important; 
+}
+
+
+.chevron-icon {
+  margin-right: 4px;
+  padding: 4px;
+  cursor: pointer;
+  vertical-align: middle;
+  border-radius: 4px;
+  vertical-align: top;
+}
+
+.chevron-icon:hover {
+  background-color: #C3D5CD;
+}
+
+.inside-empty{
+  padding-left: 8px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  padding-right: 8px;
+  margin-bottom: 1px;
+}
+.inside-element{
+  padding-left: 24px;
+  padding-right: 8px;
+  margin-bottom: 1px;
+}
+
 .left-navbar li {
-  padding: 8px;
-  width: 214px;
+  width: 230px;
   border-radius: 8px;
 }
 
 .left-navbar a {
   text-decoration: none;
-  color: #151E1A;
+  color: #424C48;
   display: block;
   margin-bottom: 1px;
+  padding-left: 4px;
+  padding-right: 8px;
+  padding-top:6px;
+  padding-bottom: 6px;
+  vertical-align: middle;
 }
 
 .active{
   font-family: 'Satoshi-Bold', sans-serif;
   background-color: #DFECE6;
   border-radius: 8px;
+  color: #151E1A !important;
 }
 
 .left-navbar a:hover {
   background-color: #E0EBE6;
   border-radius: 8px;
 }
+
+.chevron-icon {
+  transition: transform 0.3s ease; /* smooth rotation transition */
+}
+
+.chevron-rotate {
+  transform: rotate(90deg); /* rotate 90 degrees */
+}
+
 .emoji{
   padding-right: 8px;
 }
@@ -444,4 +500,8 @@ h1{
 
 .placeholder{
   color: #929996;
+}
+
+.secondary-text{
+  color: #424C48
 }

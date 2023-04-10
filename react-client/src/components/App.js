@@ -6,29 +6,6 @@ import Page from './Page';
 import CsvContainer from './CsvContainer';
 import '../styles.css';
 
-/** 
-Our State will be of this shape
-const INIT_STATE = {
-  pagesById: {
-    "pageId": {
-      title: "",
-      text: "",
-      csv: {
-        rawText: "",
-      },
-      chat: {
-        messages: [
-          {
-            img: "",
-            prompt: "",
-          },
-        ],
-      }
-    }
-  }
-}
-
-*/
 
 function App() {
   // global state
@@ -48,7 +25,9 @@ function App() {
               prompt: "Hi there. Ask me questions about your contacts data.",
             },
           ]  
-        }
+        },
+        isExpanded: false,
+        nestedPages: []
       },
       "quotes": {
         title: "Quotes",
@@ -64,7 +43,28 @@ function App() {
               prompt: "Hi there. Ask me questions about your quotes data.",
             },
           ]  
-        }
+        },
+        isExpanded: false,
+        nestedPages: [{
+          id: "nested-contacts",
+          parentId: "quotes",
+          title: "Nested Contacts",
+          emoji: "👥",
+          text: "",
+          csv: {
+            rawText: "This is contacts",
+          },
+          chat: {
+            messages: [
+              {
+                img: "open.png",
+                prompt: "Hi there. Ask me questions about your contacts data.",
+              },
+            ]  
+          },
+          isExpanded: false,
+          nestedPages: []
+        }]
       },
       "orders": {
         title: "Orders",
@@ -114,7 +114,9 @@ function App() {
               prompt: "Hi there. Ask me questions about your orders data.",
             },
           ]  
-        }
+        },
+        isExpanded: false,
+        nestedPages: []
       },
       "invoices": {
         title: "Invoices",
@@ -130,7 +132,9 @@ function App() {
               prompt: "Hi there. Ask me questions about your invoices data.",
             },
           ]  
-        }
+        },
+        isExpanded: false,
+        nestedPages: []
       },
       "purchasing": {
         title: "Purchasing",
@@ -146,7 +150,9 @@ function App() {
               prompt: "Hi there. Ask me questions about your purchasing data.",
             },
           ]  
-        }
+        },
+        isExpanded: false,
+        nestedPages: []
       },
     },
     pageIds: ["contacts", "quotes", "orders", "invoices", "purchasing"],
@@ -177,7 +183,6 @@ function App() {
             })}
           </Routes>
         </header>
-        <button>hello</button>
       </div>
     </Router>
   );
