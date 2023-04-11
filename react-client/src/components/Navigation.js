@@ -7,7 +7,7 @@ function NavigationItem({ page, expanded, toggleExpansion, path, className }) {
   const isExpanded = expanded[path];
   return (
     <li key={page.id}>
-      <NavLink to={`/${path}`} className={className}>
+      <NavLink to={`/${path}`} className={className} end>
         <img
           className={`chevron-icon ${isExpanded ? 'chevron-rotate' : ''}`}
           src="../icons/chevron.svg"
@@ -31,7 +31,7 @@ function NavigationItem({ page, expanded, toggleExpansion, path, className }) {
                 page={nestedPage}
                 expanded={expanded}
                 toggleExpansion={toggleExpansion}
-                path={`${path}/${nestedPage.id}`} // Concatenate the path for nested pages
+                path={`${nestedPage.id}`} // Concatenate the path for nested pages
               />
             ))
           ) : (
@@ -74,3 +74,7 @@ function Navigation({ appState }) {
 }
 
 export default Navigation;
+
+
+
+

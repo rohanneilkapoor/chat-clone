@@ -33,6 +33,8 @@ function Page({ pageId, appState, setAppState }) {
             },
           ],
         },
+        isExpanded: false,
+        nestedPages: []
       };
       newState.pageIds.push(newPageId);
       newState.activePageId = newPageId;
