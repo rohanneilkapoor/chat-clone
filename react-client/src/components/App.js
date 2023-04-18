@@ -27,7 +27,7 @@ function App() {
           ]  
         },
         isExpanded: false,
-        nestedPages: []
+        parent: ""
       },
       "quotes": {
         title: "Quotes",
@@ -45,26 +45,7 @@ function App() {
           ]  
         },
         isExpanded: false,
-        nestedPages: [{
-          id: "nested-contacts",
-          parentId: "quotes",
-          title: "Nested Contacts",
-          emoji: "👥",
-          text: "",
-          csv: {
-            rawText: "This is contacts",
-          },
-          chat: {
-            messages: [
-              {
-                img: "open.png",
-                prompt: "Hi there. Ask me questions about your contacts data.",
-              },
-            ]  
-          },
-          isExpanded: false,
-          nestedPages: []
-        }]
+        parent: ""
       },
       "orders": {
         title: "Orders",
@@ -116,7 +97,7 @@ function App() {
           ]  
         },
         isExpanded: false,
-        nestedPages: []
+        parent: ""
       },
       "invoices": {
         title: "Invoices",
@@ -134,7 +115,7 @@ function App() {
           ]  
         },
         isExpanded: false,
-        nestedPages: []
+        parent: ""
       },
       "purchasing": {
         title: "Purchasing",
@@ -152,11 +133,27 @@ function App() {
           ]  
         },
         isExpanded: false,
-        nestedPages: []
+        parent: ""
       },
+      "nested-invoices": {
+        title: "Nested Invoices",
+        emoji: "😊",
+        text: "",
+        csv: {
+          rawText: "This is nested invoices",
+        },
+        chat: {
+          messages: [
+            {
+              img: "open.png",
+              prompt: "Hi there. Ask me questions about your purchasing data.",
+            },
+          ]  
+        },
+        isExpanded: false,
+        parent: "invoices"
+      }
     },
-    pageIds: ["contacts", "quotes", "orders", "invoices", "purchasing"],
-    activePageId: "contacts", // Include an activePageId too
   }
   const [appState, setAppState] = useState(INIT_APP_STATE);
 
@@ -169,7 +166,7 @@ function App() {
             {Object.keys(appState.pagesById).map((pageId) => {
               return (
                 <Route
-                  path={`/${pageId}`}
+                  path={`/${pageId}/*`}
                   element={
                     <Page
                       key={pageId} // Add the key prop here

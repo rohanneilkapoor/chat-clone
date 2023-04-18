@@ -2,14 +2,20 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import '../styles.css';
 
+function formatPath(title) {
+  return title.toLowerCase().replace(/ /g, '-');
+}
+
 // NavigationItem component to render individual navigation items and their nested pages
-function NavigationItem({ page, expanded, toggleExpansion, path, className }) {
+function NavigationItem({ pageId, pageData, expanded, toggleExpansion, path, className, pagesById }) {
   const isExpanded = expanded[path];
+  const childPages = Object.values(pagesById).filter((p) => p.parent === pageId);
+  const formattedPath = formatPath(pageData.title); // Use the formatPath function here
   return (
-    <li key={page.id}>
-      <NavLink to={`/${path}`} className={className} end>
+    <li key={pageId}>
+      <NavLink to={`/${formattedPath}`} className={className} end>
         <img
-          className={`chevron-icon ${isExpanded ? 'chevron-rotate' : ''}`}
+          className={`chevron-icon ${expanded[path] ? "chevron-rotate" : ""}`}
           src="../icons/chevron.svg"
           alt="Chevron"
           onClick={(e) => {
@@ -18,20 +24,22 @@ function NavigationItem({ page, expanded, toggleExpansion, path, className }) {
             toggleExpansion(path);
           }}
         />
-        <span className="emoji">{page.emoji}</span>
-        <span>{page.title}</span>
+        <span className="emoji">{pageData.emoji}</span>
+        <span>{pageData.title}</span>
       </NavLink>
-      {isExpanded && (
+      {expanded[path] && (
         <ul>
-          {page.nestedPages.length > 0 ? (
-            page.nestedPages.map((nestedPage) => (
+          {childPages.length > 0 ? (
+            childPages.map((nestedPage) => (
               <NavigationItem
                 className="nested-pages"
                 key={nestedPage.id}
-                page={nestedPage}
+                pageId={nestedPage.id}
+                pageData={nestedPage}
                 expanded={expanded}
                 toggleExpansion={toggleExpansion}
-                path={`${nestedPage.id}`} // Concatenate the path for nested pages
+                path={nestedPage.title} // This line has been changed
+                pagesById={pagesById}
               />
             ))
           ) : (
@@ -59,15 +67,22 @@ function Navigation({ appState }) {
     <nav className="left-navbar">
       <h3>Reports</h3>
       <ul>
-        {Object.keys(appState.pagesById).map((pageId) => (
-          <NavigationItem
-            key={pageId}
-            page={appState.pagesById[pageId]}
-            expanded={expandedItems}
-            toggleExpansion={toggleExpansion}
-            path={pageId} // Use pageId as the initial path for top-level pages
-          />
-        ))}
+      {Object.keys(appState.pagesById)
+        .filter((pageId) => !appState.pagesById[pageId].parent) // Add this line to filter out child pages
+        .map((pageId) => {
+          const formattedPath = formatPath(appState.pagesById[pageId].title); // Use the formatPath function here
+          return (
+            <NavigationItem
+              key={pageId}
+              pageId={pageId}
+              pageData={appState.pagesById[pageId]}
+              expanded={expandedItems}
+              toggleExpansion={toggleExpansion}
+              path={formattedPath}
+              pagesById={appState.pagesById}
+            />
+          );
+        })}
       </ul>
     </nav>
   );
