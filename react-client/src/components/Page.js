@@ -1,6 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactQuill from 'react-quill';
+import { useNavigate } from 'react-router-dom';
 import 'react-quill/dist/quill.snow.css'; // Import the styles
+
+function formatPath(title) {
+  return title.toLowerCase().replace(/ /g, '-');
+}
 
 function Page({ pageId, appState, setAppState }) {
   const page = appState.pagesById[pageId];
@@ -12,9 +17,11 @@ function Page({ pageId, appState, setAppState }) {
   const introImage = page.chat.messages[0].img;
   console.log("INTRO MESSAGE", introImage);
   console.log({ pageId, title, text });
+  const navigate = useNavigate(); // Get access to the navigate function
 
   //CREATE NEW PAGE
   const createNewPage = () => {
+  
     setAppState((prevState) => {
       const newState = JSON.parse(JSON.stringify(prevState));
       const newPageId = `new-page-${Object.keys(newState.pagesById).length + 1}`;
@@ -40,6 +47,13 @@ function Page({ pageId, appState, setAppState }) {
       newState.activePageId = newPageId;
       console.log("PAGE IDS: ", newState.pageIds);
       console.log("PAGES BY ID: ", newState.pagesById);
+  
+      // Determine the URL path of the new page using the formatPath function
+      const newPagePath = formatPath(newState.pagesById[newPageId].title);
+  
+      // Navigate to the new page
+      navigate(`/${newPagePath}`);
+  
       return newState;
     });
   };
