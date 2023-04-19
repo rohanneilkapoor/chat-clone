@@ -15,8 +15,7 @@ function Page({ pageId, appState, setAppState }) {
   const csv = page.csv.rawText;
   const introMessage = page.chat.messages[0].prompt;
   const introImage = page.chat.messages[0].img;
-  console.log("INTRO MESSAGE", introImage);
-  console.log({ pageId, title, text });
+  const [createPageRowIndices, setCreatePageRowIndices] = useState([]);
   const navigate = useNavigate(); // Get access to the navigate function
 
   //CREATE NEW PAGE
@@ -30,7 +29,7 @@ function Page({ pageId, appState, setAppState }) {
         emoji: "📄",
         text: "",
         csv: {
-          rawText: "This is raw text",
+          rawText: filterCsvByRowIndices(csv,createPageRowIndices),
         },
         chat: {
           messages: [
@@ -45,8 +44,6 @@ function Page({ pageId, appState, setAppState }) {
       };
       newState.pageIds.push(newPageId);
       newState.activePageId = newPageId;
-      console.log("PAGE IDS: ", newState.pageIds);
-      console.log("PAGES BY ID: ", newState.pagesById);
   
       // Determine the URL path of the new page using the formatPath function
       const newPagePath = formatPath(newState.pagesById[newPageId].title);
@@ -58,15 +55,21 @@ function Page({ pageId, appState, setAppState }) {
     });
   };
 
+  function filterCsvByRowIndices(csvString, rowIndices) {
+    console.log("The row indices array that gets passed in: ", rowIndices);
+    const rows = csvString.split('\n');
+    const headerRow = rows[0];
+    const filteredRows = rowIndices.map(index => rows[index]).filter(row => row);
+    return [headerRow, ...filteredRows].join('\n');
+  }
+
   //EDITOR CODE
   const [editorText, setEditorText] = useState(text);
 
   const setPageText = (newText) => {
     setAppState((prevState) => {
-      console.log('PREVIOUS STATE BEFORE UPDATE', JSON.stringify(prevState));
       const newState = JSON.parse(JSON.stringify(prevState));
       newState.pagesById[pageId].text = newText;
-      console.log('updating page state: ', JSON.stringify({ prevState, newState }));
       return newState;
     });
   };
@@ -90,7 +93,6 @@ function Page({ pageId, appState, setAppState }) {
       }
     }
   };
-  console.log({appState});
 
   //CSV CODE
   const [csvTable, setCsvTable] = useState(null);
@@ -289,13 +291,10 @@ function Page({ pageId, appState, setAppState }) {
   
       if (response.ok) {
         const result = await response.json();
-        console.log(result);
         const codeOutputResponse = await fetch(`${BASE_URL}/code_output`);
         const cResponse = await codeOutputResponse.json();
         const messagesResponse = await fetch(`${BASE_URL}/messages`);
         const mResponse = await messagesResponse.json();
-        console.log('ALL CODE OUTPUTS: ', cResponse);
-        console.log('ALL MESSAGE OUTPUTS: ', mResponse);
         const textResponse = cResponse[cResponse.length - 1].output;
         if (
           textResponse.includes('ANSWER:') &&
@@ -306,7 +305,9 @@ function Page({ pageId, appState, setAppState }) {
                 formattedTextResponseArray,
             );
             const resultArray = JSON.parse(formattedTextResponse[1]);
+            setCreatePageRowIndices(resultArray);
             highlightRelevantRows(resultArray); 
+
             setMessages([
                 ...newMessages.slice(0, newMessages.length - 1),
                 addMessageToDiv(formattedTextResponse[0], 'open.png', true),
