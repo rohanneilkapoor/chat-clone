@@ -14,7 +14,7 @@ function NavigationItem({ pageId, pageData, expanded, toggleExpansion, path, cla
 
   console.log("CHILD: ", childPages);
   const formattedPath = formatPath(pageData.title); // Use the formatPath function here
-  const paddingLeft = indentLevel * 24;
+  const paddingLeft = 4+(indentLevel * 20);
   const emptyPaddingLeft = paddingLeft + 24;
   return (
     <li key={pageId}>
