@@ -15,6 +15,7 @@ function NavigationItem({ pageId, pageData, expanded, toggleExpansion, path, cla
   console.log("CHILD: ", childPages);
   const formattedPath = formatPath(pageData.title); // Use the formatPath function here
   const paddingLeft = indentLevel * 24;
+  const emptyPaddingLeft = paddingLeft + 24;
   return (
     <li key={pageId}>
       <NavLink
@@ -52,7 +53,7 @@ function NavigationItem({ pageId, pageData, expanded, toggleExpansion, path, cla
               />
             ))
           ) : (
-            <li className="inside-empty placeholder">No pages inside</li>
+            <li className="inside-empty placeholder" style={{ paddingLeft: `${emptyPaddingLeft}px` }}>No pages inside</li>
           )}
         </ul>
       )}
