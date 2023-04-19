@@ -329,6 +329,12 @@ h1{
   background-color: none;
 }
 
+.nav-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .left-navbar {
   position: fixed;
   top: 0;

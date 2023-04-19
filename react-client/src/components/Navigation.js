@@ -42,6 +42,7 @@ function NavigationItem({ pageId, pageData, expanded, toggleExpansion, path, cla
           {childPages.length > 0 ? (
             childPages.map((nestedPage) => (
               <NavigationItem
+                className="nav-title"
                 key={nestedPage.id}
                 pageId={nestedPage.id}
                 pageData={nestedPage}
