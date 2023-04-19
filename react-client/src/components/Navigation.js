@@ -7,13 +7,22 @@ function formatPath(title) {
 }
 
 // NavigationItem component to render individual navigation items and their nested pages
-function NavigationItem({ pageId, pageData, expanded, toggleExpansion, path, className, pagesById }) {
-  const isExpanded = expanded[path];
-  const childPages = Object.values(pagesById).filter((p) => p.parent === pageId);
+function NavigationItem({ pageId, pageData, expanded, toggleExpansion, path, className, pagesById, indentLevel }) {
+  const childPages = Object.entries(pagesById)
+  .filter(([childPageId, childPageData]) => childPageData.parent === pageId)
+  .map(([childPageId, childPageData]) => ({ id: childPageId, ...childPageData }));
+
+  console.log("CHILD: ", childPages);
   const formattedPath = formatPath(pageData.title); // Use the formatPath function here
+  const paddingLeft = indentLevel * 24;
   return (
     <li key={pageId}>
-      <NavLink to={`/${formattedPath}`} className={className} end>
+      <NavLink
+        to={`/${formattedPath}`}
+        className={className}
+        end
+        style={{ paddingLeft: `${paddingLeft}px` }} // Apply paddingLeft as inline style
+      >
         <img
           className={`chevron-icon ${expanded[path] ? "chevron-rotate" : ""}`}
           src="../icons/chevron.svg"
@@ -32,14 +41,14 @@ function NavigationItem({ pageId, pageData, expanded, toggleExpansion, path, cla
           {childPages.length > 0 ? (
             childPages.map((nestedPage) => (
               <NavigationItem
-                className="nested-pages"
                 key={nestedPage.id}
                 pageId={nestedPage.id}
                 pageData={nestedPage}
                 expanded={expanded}
                 toggleExpansion={toggleExpansion}
-                path={nestedPage.title} // This line has been changed
+                path={nestedPage.title}
                 pagesById={pagesById}
+                indentLevel={indentLevel + 1}
               />
             ))
           ) : (
@@ -68,9 +77,9 @@ function Navigation({ appState }) {
       <h3>Reports</h3>
       <ul>
       {Object.keys(appState.pagesById)
-        .filter((pageId) => !appState.pagesById[pageId].parent) // Add this line to filter out child pages
+        .filter((pageId) => !appState.pagesById[pageId].parent)
         .map((pageId) => {
-          const formattedPath = formatPath(appState.pagesById[pageId].title); // Use the formatPath function here
+          const formattedPath = formatPath(appState.pagesById[pageId].title);
           return (
             <NavigationItem
               key={pageId}
@@ -80,6 +89,7 @@ function Navigation({ appState }) {
               toggleExpansion={toggleExpansion}
               path={formattedPath}
               pagesById={appState.pagesById}
+              indentLevel={0} // Top-level navigation items have indentLevel 0
             />
           );
         })}

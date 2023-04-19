@@ -152,6 +152,24 @@ function App() {
         },
         isExpanded: false,
         parent: "invoices"
+      },
+      "nested-nested-invoices": {
+        title: "Nested Nested Invoices",
+        emoji: "💸",
+        text: "",
+        csv: {
+          rawText: "This is nested nested invoices",
+        },
+        chat: {
+          messages: [
+            {
+              img: "open.png",
+              prompt: "Hi there. Ask me questions about your nested nested invoices data.",
+            },
+          ]  
+        },
+        isExpanded: false,
+        parent: "nested-invoices"
       }
     },
   }
