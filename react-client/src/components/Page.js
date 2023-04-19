@@ -17,27 +17,29 @@ function Page({ pageId, appState, setAppState }) {
   const createNewPage = () => {
     setAppState((prevState) => {
       const newState = JSON.parse(JSON.stringify(prevState));
-      const newPageId = Date.now().toString();
+      const newPageId = `new-page-${Object.keys(newState.pagesById).length + 1}`;
       newState.pagesById[newPageId] = {
         title: `New Page ${Object.keys(newState.pagesById).length + 1}`,
         emoji: "📄",
         text: "",
         csv: {
-          rawText: "",
+          rawText: "This is raw text",
         },
         chat: {
           messages: [
             {
-              prompt: "Welcome to your new page!",
               img: "open.png",
+              prompt: "Welcome to your new page!",
             },
           ],
         },
         isExpanded: false,
-        nestedPages: []
+        parent: pageId
       };
       newState.pageIds.push(newPageId);
       newState.activePageId = newPageId;
+      console.log("PAGE IDS: ", newState.pageIds);
+      console.log("PAGES BY ID: ", newState.pagesById);
       return newState;
     });
   };

@@ -172,8 +172,11 @@ function App() {
         parent: "nested-invoices"
       }
     },
+    pageIds: ["contacts", "quotes", "orders", "invoices", "purchasing", "nested-invoices", "nested-nested-invoices"],
+    activePageId: "contacts", // Include an activePageId too
   }
   const [appState, setAppState] = useState(INIT_APP_STATE);
+  
 
   return (
     <Router>
