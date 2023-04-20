@@ -134,45 +134,9 @@ function App() {
         },
         isExpanded: false,
         parent: ""
-      },
-      "nested-invoices": {
-        title: "Nested Invoices",
-        emoji: "😊",
-        text: "",
-        csv: {
-          rawText: "This is nested invoices",
-        },
-        chat: {
-          messages: [
-            {
-              img: "open.png",
-              prompt: "Hi there. Ask me questions about your purchasing data.",
-            },
-          ]  
-        },
-        isExpanded: false,
-        parent: "invoices"
-      },
-      "nested-nested-invoices": {
-        title: "Nested Nested Invoices",
-        emoji: "💸",
-        text: "",
-        csv: {
-          rawText: "This is nested nested invoices",
-        },
-        chat: {
-          messages: [
-            {
-              img: "open.png",
-              prompt: "Hi there. Ask me questions about your nested nested invoices data.",
-            },
-          ]  
-        },
-        isExpanded: false,
-        parent: "nested-invoices"
       }
     },
-    pageIds: ["contacts", "quotes", "orders", "invoices", "purchasing", "nested-invoices", "nested-nested-invoices"],
+    pageIds: ["contacts", "quotes", "orders", "invoices", "purchasing"],
     activePageId: "contacts", // Include an activePageId too
   }
   const [appState, setAppState] = useState(INIT_APP_STATE);
