@@ -80,6 +80,75 @@ function Page({ pageId, appState, setAppState }) {
 
   const quillRef = useRef(null);
 
+  useEffect(() => {
+    if (editorText === "") {
+      handleSelectionChange({ index: 0, length: 0 });
+    }
+  }, []);
+  
+  useEffect(() => {
+    if (quillRef.current) {
+      const quillEditor = quillRef.current.getEditor();
+  
+      const handleTextChange = (delta, oldDelta, source) => {
+        const range = quillEditor.getSelection();
+      
+        if (source === 'user' && delta.ops && delta.ops.length === 2 && delta.ops[0].retain && delta.ops[1].insert === '\n') {
+          // If the user pressed the Enter key, manually trigger the selection-change event
+          setTimeout(() => {
+            const newRange = quillEditor.getSelection();
+            if (newRange) {
+              handleSelectionChange(newRange);
+            }
+          }, 0);
+        } else if (range) {
+          handleSelectionChange(range);
+        }
+      };
+  
+      const handleSelectionChangeWrapper = () => {
+        const range = quillEditor.getSelection();
+        if (range) {
+          handleSelectionChange(range);
+        }
+      };
+  
+      quillEditor.on("text-change", handleTextChange);
+      quillEditor.on("selection-change", handleSelectionChangeWrapper);
+  
+      return () => {
+        quillEditor.off("text-change", handleTextChange);
+        quillEditor.off("selection-change", handleSelectionChangeWrapper);
+      };
+    }
+  }, []);
+  
+  const handleSelectionChange = (range) => {
+    if (quillRef.current && range) {
+      const quillEditor = quillRef.current.getEditor();
+      const index = range.index;
+  
+      // Remove previous custom placeholder
+      const allPlaceholders = quillEditor.root.querySelectorAll(".custom-placeholder");
+      allPlaceholders.forEach((placeholder) => {
+        placeholder.classList.remove("custom-placeholder");
+        placeholder.removeAttribute("data-placeholder");
+      });
+  
+      // Get the line where the cursor is located
+      const [cursorLine] = quillEditor.getLine(index);
+  
+      // If the cursor line is empty, show the custom placeholder
+      if (cursorLine && cursorLine.length() === 1) {
+        const cursorLineElem = cursorLine.domNode;
+        cursorLineElem.classList.add("custom-placeholder");
+        cursorLineElem.setAttribute("data-placeholder", "Start writing or press 'space' to add data");
+      }
+    }
+  };
+
+
+
   const handleTopSectionClick = (e) => {
     if (quillRef.current) {
       const quillEditor = quillRef.current.getEditor(); 
@@ -93,6 +162,53 @@ function Page({ pageId, appState, setAppState }) {
       }
     }
   };
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  const handleTyping = () => {
+    if (quillRef.current) {
+      const quillEditor = quillRef.current.getEditor();
+      const oldPlaceholder = quillEditor.root.querySelector(".custom-placeholder");
+      if (oldPlaceholder) {
+        oldPlaceholder.classList.remove("custom-placeholder");
+        oldPlaceholder.removeAttribute("data-placeholder");
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (quillRef.current) {
+      const quillEditor = quillRef.current.getEditor();
+      quillEditor.on('selection-change', handleSelectionChange);
+    }
+  }, []);
+  
+  
 
   //CSV CODE
   const [csvTable, setCsvTable] = useState(null);
@@ -488,8 +604,9 @@ function Page({ pageId, appState, setAppState }) {
           <ReactQuill
             ref={quillRef}
             value={editorText}
-            onChange={(content, _, __, editor) => setEditorText(editor.getHTML())}
-            placeholder="Write something..."
+            onChange={setEditorText}
+            onKeyPress={handleTyping}
+           
             theme="snow"
             className="custom-quill-body"
           />
