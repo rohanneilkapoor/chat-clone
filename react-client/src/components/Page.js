@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import ReactQuill from 'react-quill';
 import { useNavigate } from 'react-router-dom';
 import 'react-quill/dist/quill.snow.css'; // Import the styles
@@ -65,6 +66,8 @@ function Page({ pageId, appState, setAppState }) {
 
   //EDITOR CODE
   const [editorText, setEditorText] = useState(text);
+  const [showTooltip, setShowTooltip] = useState(false);
+
 
   const setPageText = (newText) => {
     setAppState((prevState) => {
@@ -85,6 +88,12 @@ function Page({ pageId, appState, setAppState }) {
       handleSelectionChange({ index: 0, length: 0 });
     }
   }, []);
+
+  useEffect(() => {
+    if (showTooltip) {
+      showCursorTooltip();
+    }
+  }, [showTooltip]);
   
   useEffect(() => {
     if (quillRef.current) {
@@ -92,15 +101,28 @@ function Page({ pageId, appState, setAppState }) {
   
       const handleTextChange = (delta, oldDelta, source) => {
         const range = quillEditor.getSelection();
-      
-        if (source === 'user' && delta.ops && delta.ops.length === 2 && delta.ops[0].retain && delta.ops[1].insert === '\n') {
-          // If the user pressed the Enter key, manually trigger the selection-change event
-          setTimeout(() => {
-            const newRange = quillEditor.getSelection();
-            if (newRange) {
-              handleSelectionChange(newRange);
+        if (source === 'user' && delta.ops && delta.ops.length === 2 && delta.ops[0].retain && (delta.ops[1].insert === '\n' || delta.ops[1].insert === ' ')) {
+          if(delta.ops[1].insert === '\n'){
+            // If the user pressed the Enter key, manually trigger the selection-change event
+            setTimeout(() => {
+              const newRange = quillEditor.getSelection();
+              if (newRange) {
+                handleSelectionChange(newRange);
+              }
+            }, 0);
+          }
+          else if(delta.ops[1].insert === ' '){
+            if (quillRef.current && range) {
+              const quillEditor = quillRef.current.getEditor();
+              const index = range.index;
+              const [cursorLine] = quillEditor.getLine(index);
+          
+              // If the cursor line is empty, show the custom placeholder
+              if (cursorLine && cursorLine.length() === 2) {
+                setShowTooltip(true);
+              }
             }
-          }, 0);
+          }
         } else if (range) {
           handleSelectionChange(range);
         }
@@ -122,6 +144,164 @@ function Page({ pageId, appState, setAppState }) {
       };
     }
   }, []);
+  
+
+  const showCursorTooltip = () => {
+    if (quillRef.current) {
+      const quillEditor = quillRef.current.getEditor();
+      const range = quillEditor.getSelection();
+      if (range) {
+        const bounds = quillEditor.getBounds(range.index);
+        const tooltip = document.createElement('div');
+        tooltip.className = 'cursor-tooltip';
+        tooltip.style.position = 'absolute';
+        tooltip.style.top = bounds.top + 'px';
+        tooltip.style.width = '100%';
+        quillEditor.root.parentNode.appendChild(tooltip);
+        
+  
+        // Define the form as a React component
+        const TooltipForm = () => {
+          const [prompt, setPrompt] = useState(''); // Ensure the prompt state variable is defined here
+          const inputRef = useRef(null);
+          useEffect(() => {
+            if (inputRef.current) {
+              inputRef.current.focus(); // Focus the input field
+            }
+          }, []);
+    
+          const handleDocumentClick = (e) => {
+            if (!tooltip.contains(e.target)) {
+              setShowTooltip(false);
+              tooltip.remove(); // Remove the tooltip from the DOM
+            }
+          };
+    
+          useEffect(() => {
+            document.addEventListener('mousedown', handleDocumentClick);
+            return () => {
+              document.removeEventListener('mousedown', handleDocumentClick);
+            };
+          }, []);
+
+          const handleSubmit = async (e) => {
+            e.preventDefault();
+            removeChatHighlights();
+            removeTableHighlights();
+            removeButtonFromLastMessage();
+          
+            const newMessages = [
+              ...messages,
+              addMessageToDiv(prompt, 'dad.jpg'),
+              addMessageToDiv('Loading...', 'open.png'),
+            ];
+            setMessages(newMessages);
+            setPrompt('');
+          
+            let loadingTimeout;
+            loadingTimeout = setTimeout(() => {
+              setMessages((prevMessages) => {
+                const lastMessageText = prevMessages[prevMessages.length - 1].text;
+                if (lastMessageText === 'Loading...') {
+                  const updatedMessages = [...prevMessages];
+                  updatedMessages[updatedMessages.length - 1].text =
+                    'Loading for a bit longer...';
+                  return updatedMessages;
+                }
+                return prevMessages;
+              });
+            }, 9000);
+          
+            const data = { prompt };
+          
+            try {
+              const response = await fetch(`${BASE_URL}/api`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+              });
+          
+              if (response.ok) {
+                const result = await response.json();
+                const codeOutputResponse = await fetch(`${BASE_URL}/code_output`);
+                const cResponse = await codeOutputResponse.json();
+                const messagesResponse = await fetch(`${BASE_URL}/messages`);
+                const mResponse = await messagesResponse.json();
+                const textResponse = cResponse[cResponse.length - 1].output;
+                if (
+                  textResponse.includes('ANSWER:') &&
+                  textResponse.includes('ROW INDICES:')
+                ) {
+                    const formattedTextResponseArray = extractAnswerAndRows(textResponse);
+                    const formattedTextResponse = formatTextResponseArray(
+                        formattedTextResponseArray,
+                    );
+                    const resultArray = JSON.parse(formattedTextResponse[1]);
+                    setCreatePageRowIndices(resultArray);
+                    highlightRelevantRows(resultArray); 
+        
+                    setMessages([
+                        ...newMessages.slice(0, newMessages.length - 1),
+                        addMessageToDiv(formattedTextResponse[0], 'open.png', true),
+                    ]);
+                    } else {
+                        setMessages([
+                            ...newMessages.slice(0, newMessages.length - 1),
+                            addMessageToDiv(
+                            "I'm sorry, but I cannot understand your question. Please provide a clear question related to the CSV data, and I will answer it.",
+                            'open.png',
+                            ),
+                        ]);
+                }
+              } else {
+                setMessages([
+                    ...newMessages.slice(0, newMessages.length - 1),
+                    addMessageToDiv(
+                      'There was an error. You can try asking your question again or refreshing the page.',
+                      'open.png',
+                    ),
+                ]);
+              }
+            } catch (error) {
+              console.error(error);
+              setMessages([
+                ...newMessages.slice(0, newMessages.length - 1),
+                addMessageToDiv(
+                  'There was an error. You can try asking your question again or refreshing the page.',
+                  'open.png',
+                ),
+              ]);
+            } finally {
+              clearTimeout(loadingTimeout); // Clear the timeout
+            }
+          };
+  
+          return (
+            <form id="client-form" onSubmit={handleSubmit}>
+              <input
+                ref={inputRef}
+                type="text"
+                id="prompt"
+                name="prompt"
+                placeholder="“Show me all entries from February”"
+                autoComplete="off"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                required
+              />
+            </form>
+          );
+        };
+  
+        // Use ReactDOM.createRoot to render the form component inside the tooltip
+        ReactDOM.createRoot(tooltip).render(<TooltipForm />);
+      }
+    }
+  };
+
+  
   
   const handleSelectionChange = (range) => {
     if (quillRef.current && range) {
@@ -164,30 +344,7 @@ function Page({ pageId, appState, setAppState }) {
   };
 
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
   
 
   const handleTyping = () => {
@@ -366,99 +523,7 @@ function Page({ pageId, appState, setAppState }) {
     return message;
   };  
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    removeChatHighlights();
-    removeTableHighlights();
-    removeButtonFromLastMessage();
   
-    const newMessages = [
-      ...messages,
-      addMessageToDiv(prompt, 'dad.jpg'),
-      addMessageToDiv('Loading...', 'open.png'),
-    ];
-    setMessages(newMessages);
-    setPrompt('');
-  
-    let loadingTimeout;
-    loadingTimeout = setTimeout(() => {
-      setMessages((prevMessages) => {
-        const lastMessageText = prevMessages[prevMessages.length - 1].text;
-        if (lastMessageText === 'Loading...') {
-          const updatedMessages = [...prevMessages];
-          updatedMessages[updatedMessages.length - 1].text =
-            'Loading for a bit longer...';
-          return updatedMessages;
-        }
-        return prevMessages;
-      });
-    }, 9000);
-  
-    const data = { prompt };
-  
-    try {
-      const response = await fetch(`${BASE_URL}/api`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-  
-      if (response.ok) {
-        const result = await response.json();
-        const codeOutputResponse = await fetch(`${BASE_URL}/code_output`);
-        const cResponse = await codeOutputResponse.json();
-        const messagesResponse = await fetch(`${BASE_URL}/messages`);
-        const mResponse = await messagesResponse.json();
-        const textResponse = cResponse[cResponse.length - 1].output;
-        if (
-          textResponse.includes('ANSWER:') &&
-          textResponse.includes('ROW INDICES:')
-        ) {
-            const formattedTextResponseArray = extractAnswerAndRows(textResponse);
-            const formattedTextResponse = formatTextResponseArray(
-                formattedTextResponseArray,
-            );
-            const resultArray = JSON.parse(formattedTextResponse[1]);
-            setCreatePageRowIndices(resultArray);
-            highlightRelevantRows(resultArray); 
-
-            setMessages([
-                ...newMessages.slice(0, newMessages.length - 1),
-                addMessageToDiv(formattedTextResponse[0], 'open.png', true),
-            ]);
-            } else {
-                setMessages([
-                    ...newMessages.slice(0, newMessages.length - 1),
-                    addMessageToDiv(
-                    "I'm sorry, but I cannot understand your question. Please provide a clear question related to the CSV data, and I will answer it.",
-                    'open.png',
-                    ),
-                ]);
-        }
-      } else {
-        setMessages([
-            ...newMessages.slice(0, newMessages.length - 1),
-            addMessageToDiv(
-              'There was an error. You can try asking your question again or refreshing the page.',
-              'open.png',
-            ),
-        ]);
-      }
-    } catch (error) {
-      console.error(error);
-      setMessages([
-        ...newMessages.slice(0, newMessages.length - 1),
-        addMessageToDiv(
-          'There was an error. You can try asking your question again or refreshing the page.',
-          'open.png',
-        ),
-      ]);
-    } finally {
-      clearTimeout(loadingTimeout); // Clear the timeout
-    }
-  };
   
 
   const extractAnswerAndRows = (inputString) => {
@@ -551,18 +616,7 @@ function Page({ pageId, appState, setAppState }) {
       <div className="chat-wrapper">
         <div className="chat-container">
           <h1>{title} Chat</h1>
-          <form id="client-form" onSubmit={handleSubmit}>
-            <input
-              type="text"
-              id="prompt"
-              name="prompt"
-              placeholder="Ask a question"
-              autoComplete="off"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              required
-            />
-          </form>
+          
 
           <div id="messages" ref={messagesDivRef}>
             <div class="message">
