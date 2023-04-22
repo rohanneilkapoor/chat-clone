@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createRoot } from 'react-dom';
 import ReactDOM from 'react-dom';
 import ReactQuill from 'react-quill';
 import { useNavigate } from 'react-router-dom';
@@ -146,50 +147,109 @@ function Page({ pageId, appState, setAppState }) {
   }, []);
   
 
+  const createToolTip = (quillEditor, range) => {
+    const bounds = quillEditor.getBounds(range.index);
+    const tooltip = document.createElement('div');
+    tooltip.className = 'cursor-tooltip';
+    tooltip.style.position = 'absolute';
+    tooltip.style.top = bounds.top + 'px';
+    tooltip.style.width = '100%';
+    return tooltip;
+  };
+
+  const AIModal = ({ messages }) => {
+    return (
+      <div className="ai-modal">
+        <div id="modal-messages">
+          {messages.length > 0 &&
+            messages.map((message, i) => (
+              <div key={i} className={message.classNames.join(" ")}>
+                <div className="message-content">
+                  <img
+                    className="profile-picture"
+                    src={message.image}
+                    alt="Profile"
+                  />
+                  <div>{message.text}</div>
+                </div>
+                {message.includeButton && (
+                  <button className="create-page-button" onClick={createNewPage}>
+                    <img
+                      className="button-icon"
+                      src="../icons/plus.svg"
+                      alt="Add icon"
+                    />
+                    Create Sub-Report
+                  </button>
+                )}
+              </div>
+            ))}
+        </div>
+      </div>
+    );
+  };
+  
+
+  const createAIModal = (quillEditor, range) => {
+    const bounds = quillEditor.getBounds(range.index);
+    const modal = document.createElement('div');
+    modal.className = 'cursor-tooltip';
+    modal.style.position = 'absolute';
+    modal.style.top = bounds.top + 'px';
+    modal.style.width = '200px';
+    modal.style.height = '200px';
+    return modal;
+  }
+
+  
   const showCursorTooltip = () => {
     if (quillRef.current) {
       const quillEditor = quillRef.current.getEditor();
       const range = quillEditor.getSelection();
       if (range) {
-        const bounds = quillEditor.getBounds(range.index);
-        const tooltip = document.createElement('div');
-        tooltip.className = 'cursor-tooltip';
-        tooltip.style.position = 'absolute';
-        tooltip.style.top = bounds.top + 'px';
-        tooltip.style.width = '100%';
+        const tooltip = createToolTip(quillEditor, range);
         quillEditor.root.parentNode.appendChild(tooltip);
+        console.log(quillEditor.root.parentNode);
+        // Define a ref for the aiModalRoot outside of the TooltipForm component
+        
         
   
         // Define the form as a React component
         const TooltipForm = () => {
-          const [prompt, setPrompt] = useState(''); // Ensure the prompt state variable is defined here
+          const [prompt, setPrompt] = useState('');
           const inputRef = useRef(null);
+          // Define a state variable for the AIModal's messages
+          const [aiModalMessages, setAiModalMessages] = useState([]);
+        
           useEffect(() => {
             if (inputRef.current) {
               inputRef.current.focus(); // Focus the input field
             }
           }, []);
-    
+        
           const handleDocumentClick = (e) => {
             if (!tooltip.contains(e.target)) {
               setShowTooltip(false);
               tooltip.remove(); // Remove the tooltip from the DOM
             }
           };
-    
+        
           useEffect(() => {
             document.addEventListener('mousedown', handleDocumentClick);
             return () => {
               document.removeEventListener('mousedown', handleDocumentClick);
             };
           }, []);
-
+          
+          // Define a ref for the aiModalRoot outside of the handleSubmit function
+          const aiModalRootRef = useRef(null);
+        
           const handleSubmit = async (e) => {
             e.preventDefault();
             removeChatHighlights();
             removeTableHighlights();
             removeButtonFromLastMessage();
-          
+        
             const newMessages = [
               ...messages,
               addMessageToDiv(prompt, 'dad.jpg'),
@@ -197,7 +257,16 @@ function Page({ pageId, appState, setAppState }) {
             ];
             setMessages(newMessages);
             setPrompt('');
-          
+            const modal = createAIModal(quillEditor, range);
+            quillEditor.root.parentNode.appendChild(modal);
+            // Update the aiModalMessages state variable with the new messages
+            setAiModalMessages(newMessages);
+        
+            if (!aiModalRootRef.current) {
+              aiModalRootRef.current = createRoot(modal);
+            }
+            aiModalRootRef.current.render(<AIModal messages={aiModalMessages} />);
+        
             let loadingTimeout;
             loadingTimeout = setTimeout(() => {
               setMessages((prevMessages) => {
@@ -211,9 +280,9 @@ function Page({ pageId, appState, setAppState }) {
                 return prevMessages;
               });
             }, 9000);
-          
+        
             const data = { prompt };
-          
+        
             try {
               const response = await fetch(`${BASE_URL}/api`, {
                 method: 'POST',
@@ -222,7 +291,7 @@ function Page({ pageId, appState, setAppState }) {
                 },
                 body: JSON.stringify(data),
               });
-          
+        
               if (response.ok) {
                 const result = await response.json();
                 const codeOutputResponse = await fetch(`${BASE_URL}/code_output`);
@@ -234,66 +303,87 @@ function Page({ pageId, appState, setAppState }) {
                   textResponse.includes('ANSWER:') &&
                   textResponse.includes('ROW INDICES:')
                 ) {
-                    const formattedTextResponseArray = extractAnswerAndRows(textResponse);
-                    const formattedTextResponse = formatTextResponseArray(
-                        formattedTextResponseArray,
-                    );
-                    const resultArray = JSON.parse(formattedTextResponse[1]);
-                    setCreatePageRowIndices(resultArray);
-                    highlightRelevantRows(resultArray); 
+                  const formattedTextResponseArray = extractAnswerAndRows(textResponse);
+                  const formattedTextResponse = formatTextResponseArray(
+                    formattedTextResponseArray,
+                  );
+                  const resultArray = JSON.parse(formattedTextResponse[1]);
+                  setCreatePageRowIndices(resultArray);
+                  highlightRelevantRows(resultArray); 
         
-                    setMessages([
-                        ...newMessages.slice(0, newMessages.length - 1),
-                        addMessageToDiv(formattedTextResponse[0], 'open.png', true),
-                    ]);
-                    } else {
-                        setMessages([
-                            ...newMessages.slice(0, newMessages.length - 1),
-                            addMessageToDiv(
-                            "I'm sorry, but I cannot understand your question. Please provide a clear question related to the CSV data, and I will answer it.",
-                            'open.png',
-                            ),
-                        ]);
-                }
-              } else {
-                setMessages([
+                  const updatedMessages = [
                     ...newMessages.slice(0, newMessages.length - 1),
-                    addMessageToDiv(
-                      'There was an error. You can try asking your question again or refreshing the page.',
-                      'open.png',
-                    ),
-                ]);
-              }
-            } catch (error) {
-              console.error(error);
-              setMessages([
-                ...newMessages.slice(0, newMessages.length - 1),
-                addMessageToDiv(
-                  'There was an error. You can try asking your question again or refreshing the page.',
-                  'open.png',
-                ),
-              ]);
-            } finally {
-              clearTimeout(loadingTimeout); // Clear the timeout
-            }
-          };
-  
-          return (
-            <form id="client-form" onSubmit={handleSubmit}>
-              <input
-                ref={inputRef}
-                type="text"
-                id="prompt"
-                name="prompt"
-                placeholder="“Show me all entries from February”"
-                autoComplete="off"
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                required
-              />
-            </form>
-          );
-        };
+                    addMessageToDiv(formattedTextResponse[0], 'open.png', true),
+                  ];
+                  setMessages(updatedMessages);
+                  // Update the aiModalMessages state variable with the server response
+                  setAiModalMessages(updatedMessages);
+                  // Re-render the AIModal with the updated messages
+          aiModalRootRef.current.render(<AIModal messages={updatedMessages} />);
+        } else {
+          const updatedMessages = [
+            ...newMessages.slice(0, newMessages.length - 1),
+            addMessageToDiv(
+              "I'm sorry, but I cannot understand your question. Please provide a clear question related to the CSV data, and I will answer it.",
+              'open.png',
+            ),
+          ];
+          setMessages(updatedMessages);
+          // Update the aiModalMessages state variable with the server response
+          setAiModalMessages(updatedMessages);
+          // Re-render the AIModal with the updated messages
+          aiModalRootRef.current.render(<AIModal messages={updatedMessages} />);
+        }
+      } else {
+        const updatedMessages = [
+          ...newMessages.slice(0, newMessages.length - 1),
+          addMessageToDiv(
+            'There was an error. You can try asking your question again or refreshing the page.',
+            'open.png',
+          ),
+        ];
+        setMessages(updatedMessages);
+        // Update the aiModalMessages state variable with the server response
+        setAiModalMessages(updatedMessages);
+        // Re-render the AIModal with the updated messages
+        aiModalRootRef.current.render(<AIModal messages={updatedMessages} />);
+      }
+    } catch (error) {
+      console.error(error);
+      const updatedMessages = [
+        ...newMessages.slice(0, newMessages.length - 1),
+        addMessageToDiv(
+          'There was an error. You can try asking your question again or refreshing the page.',
+          'open.png',
+        ),
+      ];
+      setMessages(updatedMessages);
+      // Update the aiModalMessages state variable with the server response
+      setAiModalMessages(updatedMessages);
+      // Re-render the AIModal with the updated messages
+      aiModalRootRef.current.render(<AIModal messages={updatedMessages} />);
+    } finally {
+      clearTimeout(loadingTimeout); // Clear the timeout
+    }
+  };
+
+  return (
+    <form id="client-form" onSubmit={handleSubmit}>
+      <input
+        ref={inputRef}
+        type="text"
+        id="prompt"
+        name="prompt"
+        placeholder="“Show me all entries from February”"
+        autoComplete="off"
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
+        required
+      />
+    </form>
+  );
+};
+        
   
         // Use ReactDOM.createRoot to render the form component inside the tooltip
         ReactDOM.createRoot(tooltip).render(<TooltipForm />);
