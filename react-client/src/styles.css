@@ -93,8 +93,38 @@ body {
   z-index: 10000;
   border-radius: 6px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.10);
-  white-space: nowrap;
   
+  border: 1px solid #E6E6E6;
+
+  
+}
+
+.margin-top{
+  margin-top: 8px;
+}
+
+.width {
+  width: 1000px;
+}
+
+.padding{
+  padding: 16px;;
+}
+
+.ai-modal{
+  font-family: 'Satoshi-Medium', sans-serif;
+  color: #151E1A;
+  -webkit-user-select: text; /* for Chrome and Safari */
+  -moz-user-select: text; /* for Firefox */
+  -ms-user-select: text; /* for Internet Explorer and Edge */
+  user-select: text; /* standard syntax */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.large-text{
+  font-size: 22px;
+  line-height: 28px;
+  margin-top: 6px;
 }
 
 
@@ -154,7 +184,7 @@ input {
   padding: 12px;
   font-size: 17px;
   border-radius: 6px;
-  border: 1px solid #E6E6E6;
+  border: 0px solid #E6E6E6;
   box-sizing: border-box;
   background-color: #FFFFFF;
 }
@@ -182,10 +212,18 @@ align-items: center;
 width: 100%; /* set the width to 100% */
 }
 
-.create-page-button {
-margin-top: 12px;
-align-self: flex-end;
+.add-rows-button {
+  margin-top: 12px;
+  align-self: flex-end;
+  background-color: #3F5A4E;
+  color: white;
+  border: 0px solid #E6E6E6;
 }
+
+.button-container {
+  text-align: right;
+}
+
 
 
 .profile-picture {
@@ -323,9 +361,7 @@ white-space: nowrap; /* Change back to nowrap */
 background-color: #DFECE6;
 }
 
-.error {
-background-color: #F0DBDB;
-}
+
 
 .non-highlighted-row {
 background-color: none;
@@ -348,18 +384,21 @@ z-index: 1;
 }
 
 .left-navbar h3 {
-margin: 0;
-padding: 8px;
-font-size: 11px;
-font-weight: normal;
-line-height: 16px;
-letter-spacing: 0.04em;
-text-transform: uppercase;
-color: #929996;
-font-family: 'Satoshi-Black', sans-serif;
--webkit-font-smoothing: antialiased;
--moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 8px;
+}
 
+h3{
+  font-size: 11px;
+  font-weight: normal;
+  line-height: 16px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #929996;
+  font-family: 'Satoshi-Black', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin:0;
 }
 
 .left-navbar ul {
@@ -469,11 +508,8 @@ outline: none;
 .top-section-padding{
 padding-top: 120px;
 padding-bottom: 120px;
-padding-left: 32px;
-padding-right: 32px;
-max-width: 650px;
-margin-left: auto;
-margin-right: auto;
+width: 650px;
+margin-left: 400px;
 }
 
 .editable-section{
@@ -481,7 +517,7 @@ pointer-events: none;
 }
 
 .middle-container {
-position: fixed;
+height: 100%;
 left: 246px;
 right: 424px;
 top: 0;

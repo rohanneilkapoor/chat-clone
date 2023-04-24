@@ -151,7 +151,7 @@ function Page({ pageId, appState, setAppState }) {
     const bounds = quillEditor.getBounds(range.index);
     const tooltip = document.createElement('div');
     tooltip.className = 'cursor-tooltip';
-    tooltip.style.position = 'absolute';
+    //tooltip.style.position = 'absolute';
     tooltip.style.top = bounds.top + 'px';
     tooltip.style.width = '100%';
     return tooltip;
@@ -159,31 +159,37 @@ function Page({ pageId, appState, setAppState }) {
 
   const AIModal = ({ messages }) => {
     return (
-      <div className="ai-modal">
-        <div id="modal-messages">
-          {messages.length > 0 &&
-            messages.map((message, i) => (
-              <div key={i} className={message.classNames.join(" ")}>
-                <div className="message-content">
-                  <img
-                    className="profile-picture"
-                    src={message.image}
-                    alt="Profile"
-                  />
-                  <div>{message.text}</div>
-                </div>
-                {message.includeButton && (
-                  <button className="create-page-button" onClick={createNewPage}>
-                    <img
-                      className="button-icon"
-                      src="../icons/plus.svg"
-                      alt="Add icon"
-                    />
-                    Create Sub-Report
-                  </button>
-                )}
-              </div>
-            ))}
+      <div>
+        <div class="cursor-tooltip margin-top">
+          <div className="ai-modal padding">
+            <h3>AI Response</h3>
+            <div id="modal-messages" class="large-text">
+              {messages.length > 0 &&
+                messages.map((message, i) => (
+                  <div key={i} className={`${message.classNames.join(" ")}`}>
+                    <div>{message.text}</div>
+                    <div class="button-container">
+                      {message.includeButton && (
+                        <button className="add-rows-button" onClick={createNewPage}>
+                          Add highlighted rows
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        </div>
+        <div class="cursor-tooltip margin-top width">
+          <div className="ai-modal">
+            
+            <div
+              className="csv-container"
+              id="csv-container"
+              ref={csvContainerRef}
+              dangerouslySetInnerHTML={{ __html: csvTable }}
+            />
+          </div>
         </div>
       </div>
     );
@@ -192,12 +198,12 @@ function Page({ pageId, appState, setAppState }) {
 
   const createAIModal = (quillEditor, range) => {
     const bounds = quillEditor.getBounds(range.index);
+    console.log("quill: ", quillEditor);
+    console.log("bounds: ", bounds);
     const modal = document.createElement('div');
-    modal.className = 'cursor-tooltip';
-    modal.style.position = 'absolute';
+    //modal.style.position = 'absolute';
     modal.style.top = bounds.top + 'px';
-    modal.style.width = '200px';
-    modal.style.height = '200px';
+    modal.style.width = '100%';
     return modal;
   }
 
@@ -235,9 +241,9 @@ function Page({ pageId, appState, setAppState }) {
           };
         
           useEffect(() => {
-            document.addEventListener('mousedown', handleDocumentClick);
+            //document.addEventListener('mousedown', handleDocumentClick);
             return () => {
-              document.removeEventListener('mousedown', handleDocumentClick);
+              //document.removeEventListener('mousedown', handleDocumentClick);
             };
           }, []);
           
@@ -251,8 +257,6 @@ function Page({ pageId, appState, setAppState }) {
             removeButtonFromLastMessage();
         
             const newMessages = [
-              ...messages,
-              addMessageToDiv(prompt, 'dad.jpg'),
               addMessageToDiv('Loading...', 'open.png'),
             ];
             setMessages(newMessages);
@@ -368,19 +372,19 @@ function Page({ pageId, appState, setAppState }) {
   };
 
   return (
-    <form id="client-form" onSubmit={handleSubmit}>
-      <input
-        ref={inputRef}
-        type="text"
-        id="prompt"
-        name="prompt"
-        placeholder="“Show me all entries from February”"
-        autoComplete="off"
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-        required
-      />
-    </form>
+      <form id="client-form" onSubmit={handleSubmit}>
+        <input
+          ref={inputRef}
+          type="text"
+          id="prompt"
+          name="prompt"
+          placeholder="“Show me all entries from February”"
+          autoComplete="off"
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          required
+        />
+      </form>
   );
 };
         
@@ -589,7 +593,7 @@ function Page({ pageId, appState, setAppState }) {
     const message = {
       image: image,
       text: prompt,
-      classNames: ['message', 'non-highlighted-row'],
+      classNames: [],
       includeButton: includeButton,
     };
 
@@ -603,7 +607,7 @@ function Page({ pageId, appState, setAppState }) {
         !prompt.includes("I'm sorry, but I cannot understand your question.") &&
         !prompt.includes('There was an error.')
       ) {
-        message.classNames.push('highlighted-row');
+        //message.classNames.push('highlighted-row');
         
       } else if (prompt.includes('There was an error.')) {
         message.classNames.push('error');
@@ -686,9 +690,9 @@ function Page({ pageId, appState, setAppState }) {
     const lastMessageDiv = messagesDiv.lastElementChild;
   
     if (lastMessageDiv) {
-      const button = lastMessageDiv.querySelector('.create-page-button');
+      const button = lastMessageDiv.querySelector('.add-rows-button');
       if (button) {
-        lastMessageDiv.removeChild(button);
+        //lastMessageDiv.removeChild(button);
       }
     }
   };
@@ -703,7 +707,7 @@ function Page({ pageId, appState, setAppState }) {
 
   return (
     <div>
-      <div className="chat-wrapper">
+      <div className="chat-wrapper hidden">
         <div className="chat-container">
           <h1>{title} Chat</h1>
           
@@ -730,9 +734,8 @@ function Page({ pageId, appState, setAppState }) {
                   <div>{message.text}</div>
                 </div>
                 {message.includeButton && (
-                  <button className="create-page-button" onClick={createNewPage}>
-                    <img className="button-icon" src="../icons/plus.svg" alt="Add icon" />
-                    Create Sub-Report
+                  <button className="add-rows-button" onClick={createNewPage}>
+                      Add highlighted rows
                   </button>
                 )}
               </div>
@@ -758,7 +761,7 @@ function Page({ pageId, appState, setAppState }) {
 
         </div>
         <div
-          className="csv-container"
+          className="hidden"
           id="csv-container"
           ref={csvContainerRef}
           dangerouslySetInnerHTML={{ __html: csvTable }}
